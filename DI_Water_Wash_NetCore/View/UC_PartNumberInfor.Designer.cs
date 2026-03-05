@@ -27,150 +27,161 @@ partial class UC_PartNumberInfor
     /// </summary>
     private void InitializeComponent()
     {
-            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.txtPN = new System.Windows.Forms.TextBox();
-            this.txtDescription = new System.Windows.Forms.TextBox();
-            this.pl_UC1 = new System.Windows.Forms.Panel();
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.panel2 = new System.Windows.Forms.Panel();
-            this.panel3 = new System.Windows.Forms.Panel();
-            this.tableLayoutPanel1.SuspendLayout();
-            this.tableLayoutPanel2.SuspendLayout();
-            this.SuspendLayout();
-            // 
-            // tableLayoutPanel1
-            // 
-            this.tableLayoutPanel1.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
-            this.tableLayoutPanel1.ColumnCount = 1;
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel2, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.pl_UC1, 0, 1);
-            this.tableLayoutPanel1.Controls.Add(this.panel1, 0, 2);
-            this.tableLayoutPanel1.Controls.Add(this.panel2, 0, 3);
-            this.tableLayoutPanel1.Controls.Add(this.panel3, 0, 4);
-            this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel1.Font = new System.Drawing.Font("Century Gothic", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
-            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 5;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 6F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 23.5F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 23.5F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 23.5F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 23.5F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(1456, 615);
-            this.tableLayoutPanel1.TabIndex = 0;
-            // 
-            // tableLayoutPanel2
-            // 
-            this.tableLayoutPanel2.ColumnCount = 4;
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel2.Controls.Add(this.label1, 0, 0);
-            this.tableLayoutPanel2.Controls.Add(this.label2, 2, 0);
-            this.tableLayoutPanel2.Controls.Add(this.txtPN, 1, 0);
-            this.tableLayoutPanel2.Controls.Add(this.txtDescription, 3, 0);
-            this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel2.Location = new System.Drawing.Point(4, 4);
-            this.tableLayoutPanel2.Name = "tableLayoutPanel2";
-            this.tableLayoutPanel2.RowCount = 1;
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(1448, 30);
-            this.tableLayoutPanel2.TabIndex = 0;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label1.Location = new System.Drawing.Point(3, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(356, 30);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "PN:";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label2.Location = new System.Drawing.Point(727, 0);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(356, 30);
-            this.label2.TabIndex = 0;
-            this.label2.Text = "Description:";
-            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.label2.Click += new System.EventHandler(this.label2_Click);
-            // 
-            // txtPN
-            // 
-            this.txtPN.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtPN.Enabled = false;
-            this.txtPN.Font = new System.Drawing.Font("Century Gothic", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtPN.Location = new System.Drawing.Point(365, 3);
-            this.txtPN.Name = "txtPN";
-            this.txtPN.Size = new System.Drawing.Size(356, 22);
-            this.txtPN.TabIndex = 1;
-            // 
-            // txtDescription
-            // 
-            this.txtDescription.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtDescription.Enabled = false;
-            this.txtDescription.Font = new System.Drawing.Font("Century Gothic", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtDescription.Location = new System.Drawing.Point(1089, 3);
-            this.txtDescription.Name = "txtDescription";
-            this.txtDescription.Size = new System.Drawing.Size(356, 22);
-            this.txtDescription.TabIndex = 1;
-            // 
-            // pl_UC1
-            // 
-            this.pl_UC1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pl_UC1.Location = new System.Drawing.Point(4, 41);
-            this.pl_UC1.Name = "pl_UC1";
-            this.pl_UC1.Size = new System.Drawing.Size(1448, 137);
-            this.pl_UC1.TabIndex = 1;
-            // 
-            // panel1
-            // 
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel1.Location = new System.Drawing.Point(4, 185);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(1448, 137);
-            this.panel1.TabIndex = 1;
-            // 
-            // panel2
-            // 
-            this.panel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel2.Location = new System.Drawing.Point(4, 329);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(1448, 137);
-            this.panel2.TabIndex = 1;
-            // 
-            // panel3
-            // 
-            this.panel3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel3.Location = new System.Drawing.Point(4, 473);
-            this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(1448, 138);
-            this.panel3.TabIndex = 1;
-            // 
-            // UC_PartNumberInfor
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.SystemColors.ActiveBorder;
-            this.Controls.Add(this.tableLayoutPanel1);
-            this.Name = "UC_PartNumberInfor";
-            this.Size = new System.Drawing.Size(1456, 615);
-            this.tableLayoutPanel1.ResumeLayout(false);
-            this.tableLayoutPanel2.ResumeLayout(false);
-            this.tableLayoutPanel2.PerformLayout();
-            this.ResumeLayout(false);
+        tableLayoutPanel1 = new TableLayoutPanel();
+        tableLayoutPanel2 = new TableLayoutPanel();
+        label1 = new Label();
+        label2 = new Label();
+        txtPN = new TextBox();
+        txtDescription = new TextBox();
+        pl_UC1 = new Panel();
+        panel1 = new Panel();
+        panel2 = new Panel();
+        panel3 = new Panel();
+        tableLayoutPanel1.SuspendLayout();
+        tableLayoutPanel2.SuspendLayout();
+        SuspendLayout();
+        // 
+        // tableLayoutPanel1
+        // 
+        tableLayoutPanel1.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
+        tableLayoutPanel1.ColumnCount = 1;
+        tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        tableLayoutPanel1.Controls.Add(tableLayoutPanel2, 0, 0);
+        tableLayoutPanel1.Controls.Add(pl_UC1, 0, 1);
+        tableLayoutPanel1.Controls.Add(panel1, 0, 2);
+        tableLayoutPanel1.Controls.Add(panel2, 0, 3);
+        tableLayoutPanel1.Controls.Add(panel3, 0, 4);
+        tableLayoutPanel1.Dock = DockStyle.Fill;
+        tableLayoutPanel1.Font = new Font("Century Gothic", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
+        tableLayoutPanel1.Location = new Point(0, 0);
+        tableLayoutPanel1.Margin = new Padding(4, 3, 4, 3);
+        tableLayoutPanel1.Name = "tableLayoutPanel1";
+        tableLayoutPanel1.RowCount = 5;
+        tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 6F));
+        tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 23.5F));
+        tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 23.5F));
+        tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 23.5F));
+        tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 23.5F));
+        tableLayoutPanel1.Size = new Size(1699, 710);
+        tableLayoutPanel1.TabIndex = 0;
+        // 
+        // tableLayoutPanel2
+        // 
+        tableLayoutPanel2.ColumnCount = 4;
+        tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+        tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+        tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+        tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+        tableLayoutPanel2.Controls.Add(label1, 0, 0);
+        tableLayoutPanel2.Controls.Add(label2, 2, 0);
+        tableLayoutPanel2.Controls.Add(txtPN, 1, 0);
+        tableLayoutPanel2.Controls.Add(txtDescription, 3, 0);
+        tableLayoutPanel2.Dock = DockStyle.Fill;
+        tableLayoutPanel2.Location = new Point(5, 4);
+        tableLayoutPanel2.Margin = new Padding(4, 3, 4, 3);
+        tableLayoutPanel2.Name = "tableLayoutPanel2";
+        tableLayoutPanel2.RowCount = 1;
+        tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Absolute, 35F));
+        tableLayoutPanel2.Size = new Size(1689, 36);
+        tableLayoutPanel2.TabIndex = 0;
+        // 
+        // label1
+        // 
+        label1.AutoSize = true;
+        label1.Dock = DockStyle.Fill;
+        label1.Location = new Point(4, 0);
+        label1.Margin = new Padding(4, 0, 4, 0);
+        label1.Name = "label1";
+        label1.Size = new Size(414, 36);
+        label1.TabIndex = 0;
+        label1.Text = "PN:";
+        label1.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // label2
+        // 
+        label2.AutoSize = true;
+        label2.Dock = DockStyle.Fill;
+        label2.Location = new Point(848, 0);
+        label2.Margin = new Padding(4, 0, 4, 0);
+        label2.Name = "label2";
+        label2.Size = new Size(414, 36);
+        label2.TabIndex = 0;
+        label2.Text = "Description:";
+        label2.TextAlign = ContentAlignment.MiddleLeft;
+        label2.Click += label2_Click;
+        // 
+        // txtPN
+        // 
+        txtPN.Dock = DockStyle.Fill;
+        txtPN.Enabled = false;
+        txtPN.Font = new Font("Century Gothic", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+        txtPN.Location = new Point(426, 3);
+        txtPN.Margin = new Padding(4, 3, 4, 3);
+        txtPN.Name = "txtPN";
+        txtPN.Size = new Size(414, 22);
+        txtPN.TabIndex = 1;
+        // 
+        // txtDescription
+        // 
+        txtDescription.Dock = DockStyle.Fill;
+        txtDescription.Enabled = false;
+        txtDescription.Font = new Font("Century Gothic", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+        txtDescription.Location = new Point(1270, 3);
+        txtDescription.Margin = new Padding(4, 3, 4, 3);
+        txtDescription.Name = "txtDescription";
+        txtDescription.Size = new Size(415, 22);
+        txtDescription.TabIndex = 1;
+        // 
+        // pl_UC1
+        // 
+        pl_UC1.Dock = DockStyle.Fill;
+        pl_UC1.Location = new Point(5, 47);
+        pl_UC1.Margin = new Padding(4, 3, 4, 3);
+        pl_UC1.Name = "pl_UC1";
+        pl_UC1.Size = new Size(1689, 159);
+        pl_UC1.TabIndex = 1;
+        // 
+        // panel1
+        // 
+        panel1.Dock = DockStyle.Fill;
+        panel1.Location = new Point(5, 213);
+        panel1.Margin = new Padding(4, 3, 4, 3);
+        panel1.Name = "panel1";
+        panel1.Size = new Size(1689, 159);
+        panel1.TabIndex = 1;
+        // 
+        // panel2
+        // 
+        panel2.Dock = DockStyle.Fill;
+        panel2.Location = new Point(5, 379);
+        panel2.Margin = new Padding(4, 3, 4, 3);
+        panel2.Name = "panel2";
+        panel2.Size = new Size(1689, 159);
+        panel2.TabIndex = 1;
+        // 
+        // panel3
+        // 
+        panel3.Dock = DockStyle.Fill;
+        panel3.Location = new Point(5, 545);
+        panel3.Margin = new Padding(4, 3, 4, 3);
+        panel3.Name = "panel3";
+        panel3.Size = new Size(1689, 161);
+        panel3.TabIndex = 1;
+        // 
+        // UC_PartNumberInfor
+        // 
+        AutoScaleDimensions = new SizeF(7F, 15F);
+        AutoScaleMode = AutoScaleMode.Font;
+        BackColor = SystemColors.ActiveBorder;
+        Controls.Add(tableLayoutPanel1);
+        Margin = new Padding(4, 3, 4, 3);
+        Name = "UC_PartNumberInfor";
+        Size = new Size(1699, 710);
+        tableLayoutPanel1.ResumeLayout(false);
+        tableLayoutPanel2.ResumeLayout(false);
+        tableLayoutPanel2.PerformLayout();
+        ResumeLayout(false);
 
     }
 

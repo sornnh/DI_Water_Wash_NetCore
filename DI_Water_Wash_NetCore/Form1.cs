@@ -1,7 +1,9 @@
-﻿using log4net;
+﻿using DI_Water_Wash_NetCore.View;
+using log4net;
 using Microsoft.VisualBasic.Logging;
 using System.Diagnostics;
 using System.Management;
+using System.Reflection;
 
 namespace DI_Water_Wash_NetCore
 {
@@ -33,8 +35,8 @@ namespace DI_Water_Wash_NetCore
         private static Mutex _mutex = null;
         private string Password;
         delegate void DelResource();
-        private string AssyPN;
-        private string WorkOrder;
+        public string[] AssyPN;
+        public string[] WorkOder;
         #endregion
         #region Define Log
         private static readonly ILog log = LogManager.GetLogger("InitializeLogger");
@@ -46,15 +48,16 @@ namespace DI_Water_Wash_NetCore
         private const int LOG_UPDATE_INTERVAL = 200; // ms: tần suất cập nhật UI
         #endregion
         #region Define Unit
-        private CancellationToken cts;
-        //private UC_Main _UcMain;
-        //private UC_Interface _UcInterface;
-        //private UC_Setting _UcSetting;
-        //private UC_Parameter _UcParameter;
+        private CancellationTokenSource cts;
+        private UC_Main _UcMain;
+        private UC_Interface _UcInterface;
+        private UC_Setting _UcSetting;
+        private UC_Parameter _UcParameter;
         #endregion
         #endregion
         public FrmMain(string _password)
         {
+            StateCommon.Secsion = StateCommon.SecsionTest.DI_Water_Wash;
             const string appName = "DI_Water_Wash_NetCore";  // đổi tên theo app của bạn
             bool createdNew;
             _mutex = new Mutex(true, appName, out createdNew);
@@ -113,8 +116,14 @@ namespace DI_Water_Wash_NetCore
                 string[] array = File.ReadAllLines("C:\\Aavid_Test\\Setup-ini\\Flushing_Part_Numbers.txt")
                      .Where(line => !string.IsNullOrWhiteSpace(line))
                      .ToArray();
-                AssyPN = array[1].Split(',')[1].Trim();
-                WorkOrder = array[1].Split(',')[2].Trim();
+                AssyPN = new string[array.Length - 1];
+                WorkOder = new string[array.Length - 1];
+                for (int i = 0; i < AssyPN.Length; i++)
+                {
+                    string[] array2 = array[i + 1].Split(',');
+                    AssyPN[i] = array2[1].Trim();
+                    WorkOder[i] = array2[2].Trim();
+                }
                 string stationID = ClsIO.ReadValue("LOGGING_DATA", "Tester_ID", "", "C:\\Aavid_Test\\Setup-ini\\LCS_Logging_Setup.ini").Trim().Trim('"').Trim('\'');
                 if (stationID == "" || stationID == null || stationID == string.Empty)
                 {
@@ -133,8 +142,8 @@ namespace DI_Water_Wash_NetCore
                 #region Initialize ASP Control
                 StateCommon.LoadingText += "Config ASP Serial Port...\r\n";
                 log.Debug("Config ASP Serial Port...");
-                Cls_Interface.Initialize(AssyPN);
-                cts = new CancellationToken();
+                Cls_Interface.Initialize();
+                cts = new CancellationTokenSource();
                 _ = Cls_Interface.PollScanAnalog(cts.Token, 1000);
                 StateCommon.LoadingText += "Config ASP Serial Port completed\r\n";
                 log.Debug("Config ASP Serial Port completed");
@@ -144,6 +153,21 @@ namespace DI_Water_Wash_NetCore
                 #endregion
                 StateCommon.LoadingText += "Initial Unit...\r\n";
                 log.Debug("Initial Unit");
+                ClsUnitManagercs.Initialize(AssyPN, WorkOder, this, stationID);
+                StateCommon.LoadingText += "Check Program Parameter completed\r\n";
+                log.Debug("Check Program Parameter completed");
+                _UcInterface = new UC_Interface();
+                _UcMain = new UC_Main(Password);
+                _UcSetting = new UC_Setting();
+                _UcParameter = new UC_Parameter();
+                MenuActionChanged(MenuAction.MAIN);
+                StateCommon.LoadingText += "Complete\r\n";
+                log.Debug("Complete");
+                StateCommon.LoadingValue = 100;
+                StateCommon.bLoading = false;
+                Assembly assembly = Assembly.GetExecutingAssembly();
+                Version version = assembly.GetName().Version;
+                lb_Ver.Text = "Version: " + version;
             }
         }
 
@@ -164,37 +188,45 @@ namespace DI_Water_Wash_NetCore
                     if (frmMessage.DialogResult != DialogResult.OK) return;
                     else
                     {
-                        //cts?.Cancel();
-                        //ClsInterface.Disconnect();
+                        Cls_Interface.cls_ASPcontrol.SetAllRelayOFF();
+                        cts?.Cancel();
                         Application.Exit();
                     }
                 }
                 return;
             }
             if (action == currentAction) return;
+            if (ClsUnitManagercs.cls_Units[0].clsSequenceTest.TestType != "Engineering Test" && action != MenuAction.MAIN)
+            {
+                using (FrmMessage frmMessage = new FrmMessage("Current mode is Production Test\r\nSwitch to Engineer Test and try again!!!", Color.Red, Color.Black))
+                {
+                    frmMessage.ShowDialog();
+                }
+                return;
+            }
             currentAction = action;
             UpdateLabelMenuAction(currentAction);
             switch (action)
             {
                 case MenuAction.MAIN:
                     pl_Main.Controls.Clear();
-                    //_UcMain.Dock = DockStyle.Fill;
-                    //pl_Main.Controls.Add(_UcMain);
+                    _UcMain.Dock = DockStyle.Fill;
+                    pl_Main.Controls.Add(_UcMain);
                     break;
                 case MenuAction.SETTING:
                     pl_Main.Controls.Clear();
-                    //_UcSetting.Dock = DockStyle.Fill;
-                    //pl_Main.Controls.Add(_UcSetting);
+                    _UcSetting.Dock = DockStyle.Fill;
+                    pl_Main.Controls.Add(_UcSetting);
                     break;
                 case MenuAction.PARAMETER:
                     pl_Main.Controls.Clear();
-                    //_UcParameter.Dock = DockStyle.Fill;
-                    //pl_Main.Controls.Add(_UcParameter);
+                    _UcParameter.Dock = DockStyle.Fill;
+                    pl_Main.Controls.Add(_UcParameter);
                     break;
                 case MenuAction.INTERFACE:
                     pl_Main.Controls.Clear();
-                    //_UcInterface.Dock = DockStyle.Fill;
-                    //pl_Main.Controls.Add(_UcInterface);
+                    _UcInterface.Dock = DockStyle.Fill;
+                    pl_Main.Controls.Add(_UcInterface);
                     break;
             }
         }
@@ -321,5 +353,9 @@ namespace DI_Water_Wash_NetCore
         #endregion
         #endregion
 
+        private void FrmMain_FormClosing(object sender, FormClosingEventArgs e)
+        {
+
+        }
     }
 }

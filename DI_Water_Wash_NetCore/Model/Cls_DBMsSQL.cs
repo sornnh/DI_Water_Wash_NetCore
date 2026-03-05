@@ -148,48 +148,49 @@ using log4net;
                 Close();
             }
         }
-        public bool SaveToDIWaterWashLog(string serial,string assyPN,string station,string failCode,string operatorName,string remark,string workOrder,int stepNo, float Flowrate,float Waterpressure, float Airpressure)
-        {
-            bool result = false;
-            string query = @"
+    public bool SaveToDIWaterWashLog(string serial, string assyPN, string station, string failCode, string operatorName, string remark, string workOrder, int stepNo, int Fixture_No, float Flowrate, float Waterpressure, float Airpressure)
+    {
+        bool result = false;
+        string query = @"
                             INSERT INTO DI_Water_Wash_Log
-                            (Serial, Assy_PN, Date_Time, Station, FailCode, Operator, Remark, Work_Order, Step_No, Water_Flow_Rate, Water_Pressure, Air_Pressure)
+                            (Serial, Assy_PN, Date_Time, Station, FailCode, Operator, Remark, Work_Order, Step_No, Water_Flow_Rate, Water_Pressure, Air_Pressure, Fixture_No)
                             VALUES
-                            (@Serial, @Assy_PN, @Date_Time, @Station, @FailCode, @Operator, @Remark, @Work_Order, @Step_No, @Water_Flow_Rate, @Water_Pressure, @Air_Pressure);";
-            try
+                            (@Serial, @Assy_PN, @Date_Time, @Station, @FailCode, @Operator, @Remark, @Work_Order, @Step_No, @Water_Flow_Rate, @Water_Pressure, @Air_Pressure, @Fixture_No);";
+        try
+        {
+            Open();
+            using (var command = new SqlCommand(query, connection))
             {
-                Open();
-                using (var command = new SqlCommand(query, connection))
-                {
-                    command.Parameters.AddWithValue("@Serial", serial);
-                    command.Parameters.AddWithValue("@Assy_PN", assyPN);
-                    command.Parameters.AddWithValue("@Date_Time", DateTime.Now);
-                    command.Parameters.AddWithValue("@Station", station);
-                    command.Parameters.AddWithValue("@FailCode", failCode ?? "");
-                    command.Parameters.AddWithValue("@Operator", operatorName ?? "");
-                    command.Parameters.AddWithValue("@Remark", remark ?? "");
-                    command.Parameters.AddWithValue("@Work_Order", workOrder ?? "");
-                    command.Parameters.AddWithValue("@Step_No", stepNo);
-                    command.Parameters.AddWithValue("@Water_Flow_Rate", Flowrate);
-                    command.Parameters.AddWithValue("@Water_Pressure", Waterpressure);
-                    command.Parameters.AddWithValue("@Air_Pressure", Airpressure);
-                    command.ExecuteNonQuery();
-                }
-                result =  true;
+                command.Parameters.AddWithValue("@Serial", serial);
+                command.Parameters.AddWithValue("@Assy_PN", assyPN);
+                command.Parameters.AddWithValue("@Date_Time", DateTime.Now);
+                command.Parameters.AddWithValue("@Station", station);
+                command.Parameters.AddWithValue("@FailCode", failCode ?? "");
+                command.Parameters.AddWithValue("@Operator", operatorName ?? "");
+                command.Parameters.AddWithValue("@Remark", remark ?? "");
+                command.Parameters.AddWithValue("@Work_Order", workOrder ?? "");
+                command.Parameters.AddWithValue("@Step_No", stepNo);
+                command.Parameters.AddWithValue("@Fixture_No", Fixture_No);
+                command.Parameters.AddWithValue("@Water_Flow_Rate", Flowrate);
+                command.Parameters.AddWithValue("@Water_Pressure", Waterpressure);
+                command.Parameters.AddWithValue("@Air_Pressure", Airpressure);
+                command.ExecuteNonQuery();
             }
-            catch (Exception ex)
-            {
-                log.Error("Save DI_Water_Wash_Log Error: " + ex.Message);
-                result = false;
-            }
-            finally
-            {
-                Close();
-            }
-            return result;
+            result = true;
         }
-        // Thêm vào đây:
-        public bool SaveToLogMonths_LogTable(string SN, string PN, DateTime dateTime, string Station, string FailCode, string proc, string stepNo)
+        catch (Exception ex)
+        {
+            log.Error("Save DI_Water_Wash_Log Error: " + ex.Message);
+            result = false;
+        }
+        finally
+        {
+            Close();
+        }
+        return result;
+    }
+    // Thêm vào đây:
+    public bool SaveToLogMonths_LogTable(string SN, string PN, DateTime dateTime, string Station, string FailCode, string proc, string stepNo)
         {
             bool result = false;
             string query = @"

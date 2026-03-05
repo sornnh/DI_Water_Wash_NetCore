@@ -9,7 +9,7 @@ using System.Threading.Tasks;
     {
         public static ClsUnit[] cls_Units;
 
-        public static void Initialize(string[] assyPN,string [] WorkOder,Form mainForm,string StationID)
+        public static void Initialize(string[] assyPN,string[] WorkOder,Form mainForm,string StationID)
         {
             cls_Units = new ClsUnit[assyPN.Length];
             for (int i = 0; i < assyPN.Length; i++)

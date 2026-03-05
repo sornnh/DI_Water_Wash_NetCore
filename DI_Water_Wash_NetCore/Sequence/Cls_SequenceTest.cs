@@ -5,18 +5,30 @@ using System.Diagnostics;
 
 public class Cls_SequenceTest
 {
+    #region Delegate and Event
     public delegate void DelShow_UpdateAnalogValue_Request(Cls_SequenceTest sender);
+    public event ProcessLogEventArgs OnRequestAddProcessLogTest;
+    public delegate void ProcessLogEventArgs(int SNIndex, System.Data.DataTable LogData);
+    public event DelShow_UpdateAnalogValue_Request OnRequestUpdateAnalogValue;
+    public delegate void DelShow_UpdateResult_Request();
+    public event DelShow_UpdateResult_Request OnRequestUpdateResult;
+    #endregion
+    #region Enum
     public enum TestSeq
     {
+        ABORT = -3,
         NONE = -2, // Trạng thái không có quá trình nào đang chạy
         ERROR = -1,
         WAIT = 9999,
+        FIXTURE_SCAN = -4,
+        FIXTURE_SCAN_OK = -5,
+        FIXTURE_SCAN_NG = -6,
         SN_INSERT = 0,
         SN_VERIFY = 1,
         SN_CHECK_ROUTER = 2,
         SN_CHECK_ROUTER_OK = 3,
         SETTING_PUMP = 4,
-        PRE_WASHING =5,
+        PRE_WASHING = 5,
         FLUSHING_WASHING = 6,
         TURN_REVERSE_WASHING = 7,
         REVERSE_WASHING = 8,
@@ -34,6 +46,8 @@ public class Cls_SequenceTest
         SAVE_DB = 21,
         END = 22,
     }
+    #endregion
+    #region Variables
     private double Air_PressureMax = 0.0;
     private double Air_PressureMin = 0.0;
     private double Air_PressureVoltgeMax = 0.0;
@@ -50,9 +64,22 @@ public class Cls_SequenceTest
     private double FlowRateMin = 0.0;
     private double FlowRateCurrentMax = 0.0;
     private double FlowRateCurrentMin = 0.0;
+    public int iQDTimeused { get; private set; }
     public double FlowRate { get; private set; }
     public double AirPressure { get; private set; }
     public double WaterPressure { get; private set; }
+    private bool _bTestAbort = false;
+    public bool bTestAbort
+    {
+        get
+        {
+            return _bTestAbort;
+        }
+        set
+        {
+            _bTestAbort = value;
+        }
+    }
     public double AirFlow { get; private set; }
     private Form _mainForm;
     public List<double> ListFlowRates { get; private set; } = new List<double>();
@@ -60,12 +87,7 @@ public class Cls_SequenceTest
     public List<double> ListAirFlow { get; private set; } = new List<double>();
     public List<double> ListWaterPressures { get; private set; } = new List<double>();
     //public delegate void DelShow_AddProcessLogTest_Request(DataTable sender);
-    public event EventHandler<ProcessLogEventArgs> OnRequestAddProcessLogTest;
-    public class ProcessLogEventArgs : EventArgs
-    {
-        public int UnitIndex { get; set; }
-        public System.Data.DataTable LogData { get; set; }
-    }
+    
     public Stopwatch sw_prewash { get; private set; }
     public Stopwatch sw_flush { get; private set; }
     public Stopwatch sw_reverse { get; private set; }
@@ -76,11 +98,8 @@ public class Cls_SequenceTest
     public Stopwatch sw_Showfail = new Stopwatch();
     private bool _isTestResultShown = false;
     private static readonly ILog log = LogManager.GetLogger(typeof(Cls_SequenceTest));
-    public string TestResult { get; private set; }
-    private Cls_ASPcontrol cls_ASPcontrol;
+    public string TestResult { get; private set; } = "N/A";
     Cls_DBMsSQL ProductionDB = new Cls_DBMsSQL();
-    private bool _AutoMode = true;
-    private StateCommon.InverterType _InverterType;
     private bool _bGetAnalogValue = false;
     private bool _bGetFlowRate = false;
     private bool _bGetAirPressure = false;
@@ -115,10 +134,10 @@ public class Cls_SequenceTest
     public int iRelayBuzzer { get; private set; }
     public int iRelayYellow { get; private set; }
     public byte slaveID { get; private set; }
-        
+
     private int _StepTesting = 0;
     private string _TestType = "Production Test";
-    public string TestType 
+    public string TestType
     {
         get { return _TestType; }
         set { _TestType = value; }
@@ -164,19 +183,7 @@ public class Cls_SequenceTest
         }
     }
 
-    public bool AutoMode
-    {
-        get
-        {
-            return _AutoMode;
-        }
-        set
-        {
-            _AutoMode = value;
-        }
-    }
-
-    public event DelShow_UpdateAnalogValue_Request OnRequestUpdateAnalogValue;
+    #endregion
 
     public Cls_SequenceTest(int Index, Form mainForm)
     {
@@ -252,9 +259,12 @@ public class Cls_SequenceTest
         sw_reverse = new Stopwatch();
         sw_drying = new Stopwatch();
         sw_reverse_drying = new Stopwatch();
+
         _testSeq = TestSeq.WAIT;
         ProductionDB.Initialize("10.102.4.20", "Production_SZ", "sa", "nuventixleo");
         ProductionDB.Open();
+        var logqd = LifeTimeLogManager.LoadLog(ClsDefine.DefineSystem.sQDlogpath);
+        iQDTimeused = logqd != null ? logqd.TimeUsed : 0;
         Thread thread = new Thread(LoopGetAnalogValue);
         thread.IsBackground = true;
         thread.Name = "ThrGetFlowRate" + Index;
@@ -262,7 +272,7 @@ public class Cls_SequenceTest
     }
     private void GetDefineforSensor()
     {
-        Air_PressureMax = double.Parse(ClsIO.ReadValue("Air_Pressure", "Air_Pressure_Max", "1" , $"C:\\Aavid_Test\\Setup-ini\\AnalogSensorConfiguration_{iIndex}.ini"));
+        Air_PressureMax = double.Parse(ClsIO.ReadValue("Air_Pressure", "Air_Pressure_Max", "1", $"C:\\Aavid_Test\\Setup-ini\\AnalogSensorConfiguration_{iIndex}.ini"));
         Air_PressureMin = double.Parse(ClsIO.ReadValue("Air_Pressure", "Air_Pressure_Min", "-0.1", $"C:\\Aavid_Test\\Setup-ini\\AnalogSensorConfiguration_{iIndex}.ini"));
         Air_PressureVoltgeMax = double.Parse(ClsIO.ReadValue("Air_Pressure", "Air_Pressure_Voltge_Max", "5", $"C:\\Aavid_Test\\Setup-ini\\AnalogSensorConfiguration_{iIndex}.ini"));
         Air_PressureVoltgeMin = double.Parse(ClsIO.ReadValue("Air_Pressure", "Air_Pressure_Voltge_Min", "0.6", $"C:\\Aavid_Test\\Setup-ini\\AnalogSensorConfiguration_{iIndex}.ini"));
@@ -274,9 +284,9 @@ public class Cls_SequenceTest
         FlowRateMin = double.Parse(ClsIO.ReadValue("Flow_Rate", "Flow_Rate_Min", "0", $"C:\\Aavid_Test\\Setup-ini\\AnalogSensorConfiguration_{iIndex}.ini"));
         FlowRateCurrentMax = double.Parse(ClsIO.ReadValue("Flow_Rate", "Flow_Rate_Current_Max", "20", $"C:\\Aavid_Test\\Setup-ini\\AnalogSensorConfiguration_{iIndex}.ini"));
         FlowRateCurrentMin = double.Parse(ClsIO.ReadValue("Flow_Rate", "Flow_Rate_Current_Min", "0", $"C:\\Aavid_Test\\Setup-ini\\AnalogSensorConfiguration_{iIndex}.ini"));
-        if(!File.Exists("C:\\Aavid_Test\\Setup-ini\\AnalogSensorConfiguration.ini"))
+        if (!File.Exists("C:\\Aavid_Test\\Setup-ini\\AnalogSensorConfiguration.ini"))
         {
-            ClsIO.WriteValue("Air_Pressure", "Air_Pressure_Max",Air_PressureMax.ToString(), $"C:\\Aavid_Test\\Setup-ini\\AnalogSensorConfiguration_{iIndex}.ini");
+            ClsIO.WriteValue("Air_Pressure", "Air_Pressure_Max", Air_PressureMax.ToString(), $"C:\\Aavid_Test\\Setup-ini\\AnalogSensorConfiguration_{iIndex}.ini");
             ClsIO.WriteValue("Air_Pressure", "Air_Pressure_Min", Air_PressureMin.ToString(), $"C:\\Aavid_Test\\Setup-ini\\AnalogSensorConfiguration_{iIndex}.ini");
             ClsIO.WriteValue("Air_Pressure", "Air_Pressure_Voltge_Max", Air_PressureVoltgeMax.ToString(), $"C:\\Aavid_Test\\Setup-ini\\AnalogSensorConfiguration_{iIndex}.ini");
             ClsIO.WriteValue("Air_Pressure", "Air_Pressure_Voltge_Min", Air_PressureVoltgeMin.ToString(), $"C:\\Aavid_Test\\Setup-ini\\AnalogSensorConfiguration_{iIndex}.ini");
@@ -288,7 +298,7 @@ public class Cls_SequenceTest
             ClsIO.WriteValue("Flow_Rate", "Flow_Rate_Min", FlowRateMin.ToString(), $"C:\\Aavid_Test\\Setup-ini\\AnalogSensorConfiguration_{iIndex}.ini");
             ClsIO.WriteValue("Flow_Rate", "Flow_Rate_Current_Max", FlowRateCurrentMax.ToString(), $"C:\\Aavid_Test\\Setup-ini\\AnalogSensorConfiguration_{iIndex}.ini");
             ClsIO.WriteValue("Flow_Rate", "Flow_Rate_Current_Min", FlowRateCurrentMin.ToString(), $"C:\\Aavid_Test\\Setup-ini\\AnalogSensorConfiguration_{iIndex}.ini");
-        }    
+        }
     }
     public void LoopGetAnalogValue()
     {
@@ -309,19 +319,20 @@ public class Cls_SequenceTest
                 if (_bGetFlowRate)
                     ReadFlowRate();
             }
-            Thread.Sleep(500);
+            Thread.Sleep(1000);
         }
     }
     public void UpdateAnalogValue()
     {
         this.OnRequestUpdateAnalogValue?.Invoke(this);
     }
+    #region Read and Set Analog Value
     public async void SetFlowRate(double flowRate)
     {
         try
         {
             int flowRateInt = (int)(flowRate * 100.0);
-            if (!(await cls_ASPcontrol.SetFlowRateCheckResult(iADAFlowRate, flowRateInt)))
+            if (!(await Cls_Interface.cls_ASPcontrol.SetFlowRateCheckResult(iADAFlowRate, flowRateInt)))
             {
                 log.Error((object)$"Failed to set flow rate for ADA {iADAFlowRate} to {flowRate} L/min.");
             }
@@ -336,11 +347,11 @@ public class Cls_SequenceTest
             log.Error((object)$"Exception while setting flow rate for ADA {iADAFlowRate}: {ex.Message}");
         }
     }
-    public async void ReadFlowRate()
+    public  void ReadFlowRate()
     {
         try
         {
-            double flowRate = await cls_ASPcontrol.GetADIAsync(iADAFlowRate);
+            double flowRate = Cls_Interface.cls_ASPcontrol.ADIs[iADAFlowRate-1];
             if (flowRate < 0.0)
             {
                 log.Error((object)$"Failed to read flow rate for ADA {iADAFlowRate}.");
@@ -357,11 +368,11 @@ public class Cls_SequenceTest
             log.Error((object)$"Exception while reading flow rate for ADA {iADAFlowRate}: {ex.Message}");
         }
     }
-    public async void ReadAirPressure()
+    public void ReadAirPressure()
     {
         try
         {
-            double airpressure = await cls_ASPcontrol.GetADVAsync(iADVAirPressure);
+            double airpressure = Cls_Interface.cls_ASPcontrol.ADVs[iADVAirPressure-1];
             if (airpressure < 0.0)
             {
                 log.Error((object)$"Failed to read voltage for RADV {iADVAirPressure}.");
@@ -375,11 +386,11 @@ public class Cls_SequenceTest
             log.Error((object)$"Exception while reading air pressure for ADV {iADAFlowRate}: {ex.Message}");
         }
     }
-    public async void ReadWaterPressure()
+    public void ReadWaterPressure()
     {
         try
         {
-            double waterpressure = await cls_ASPcontrol.GetADCAsync(iADCWaterPressure);
+            double waterpressure = Cls_Interface.cls_ASPcontrol.ADCs[iADCWaterPressure-1];
             if (waterpressure < 0.0)
             {
                 log.Error((object)$"Failed to read water pressure for ADC {iADCWaterPressure}.");
@@ -392,11 +403,11 @@ public class Cls_SequenceTest
             log.Error((object)$"Exception while reading water pressure for ADC {iADCWaterPressure}: {ex.Message}");
         }
     }
-    public async void ReadAirFlow()
+    public void ReadAirFlow()
     {
         try
         {
-            double airFlow = await cls_ASPcontrol.GetADCAsync(iADCAirFlow);
+            double airFlow = Cls_Interface.cls_ASPcontrol.ADCs[iADCAirFlow-1];
             if (airFlow < 0.0)
             {
                 log.Error((object)$"Failed to read air flow for ADC {iADCAirFlow}.");
@@ -417,7 +428,7 @@ public class Cls_SequenceTest
         {
             flowRate = ((mA - FlowRateCurrentMin) / (FlowRateCurrentMax - FlowRateCurrentMin)) * (FlowRateMax - FlowRateMin) + FlowRateMin;
         }
-        return flowRate;
+        return Math.Round(flowRate,3);
     }
     private double GetAirPressure(double V)
     {
@@ -427,7 +438,7 @@ public class Cls_SequenceTest
         {
             AirPressure = ((V - Air_PressureVoltgeMin) / (Air_PressureVoltgeMax - Air_PressureVoltgeMin)) * (Air_PressureMax - Air_PressureMin) + Air_PressureMin;
         }
-        return AirPressure;
+        return Math.Round(AirPressure, 3);
     }
     private double GetWaterPressure(double V)
     {
@@ -437,7 +448,7 @@ public class Cls_SequenceTest
         {
             WaterPressure = ((V - WaterPressureVoltgeMin) / (WaterPressureVoltgeMax - WaterPressureVoltgeMin)) * (WaterPressureMax - WaterPressureMin) + WaterPressureMin;
         }
-        return WaterPressure;
+        return Math.Round(WaterPressure, 3);
     }
     private double GetAirFlow(double V)
     {
@@ -453,13 +464,13 @@ public class Cls_SequenceTest
     {
         if (bOnOff)
         {
-            if (!(await cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Air_Water, 1)))
+            if (!(await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Air_Water, 1)))
             {
                 log.Error((object)$"Relay 3Way {iRelay3Way_Air_Water} failed to turn on.");
                 MessageBox.Show($"Relay 3Way {iRelay3Way_Air_Water} failed to turn on.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
             }
         }
-        else if (!(await cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Air_Water, 0)))
+        else if (!(await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Air_Water, 0)))
         {
             log.Error((object)$"Relay 3Way {iRelay3Way_Air_Water} failed to turn off.");
             MessageBox.Show($"Relay 3Way {iRelay3Way_Air_Water} failed to turn off.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
@@ -469,53 +480,250 @@ public class Cls_SequenceTest
     {
         if (bOnOff)
         {
-            switch (_InverterType)
+            if (!(await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelayPump, 1)))
             {
-                case StateCommon.InverterType.ASP:
-                    if (!(await cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelayPump, 1)))
-                    {
-                        log.Error((object)$"Relay Pump {iRelayPump} failed to turn on.");
-                        MessageBox.Show($"Relay Pump {iRelayPump} failed to turn on.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-                    }
-                    break;
+                log.Error((object)$"Relay Pump {iRelayPump} failed to turn on.");
+                MessageBox.Show($"Relay Pump {iRelayPump} failed to turn on.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
             }
-            return;
         }
-        switch (_InverterType)
+        else
         {
-            case StateCommon.InverterType.ASP:
-                if (!(await cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelayPump, 0)))
-                {
-                    log.Error((object)$"Relay Pump {iRelayPump} failed to turn off.");
-                    MessageBox.Show($"Relay Pump {iRelayPump} failed to turn off.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-                }
-                break;
+            if (!(await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelayPump, 0)))
+            {
+                log.Error((object)$"Relay Pump {iRelayPump} failed to turn off.");
+                MessageBox.Show($"Relay Pump {iRelayPump} failed to turn off.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+            }
         }
-    }
-    private async Task ShowLighTowerError()
-    {
-        await cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelayRed, 1);
-        await cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelayYellow, 0);
-        await cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelayGreen, 0);
-        await cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelayBuzzer, 1);
     }
     public async void SwitchRelay3Way_Reverse(bool bOnOff)
     {
         if (bOnOff)
         {
-            if (!(await cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Reverse, 1)))
+            if (!(await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Reverse, 1)))
             {
                 log.Error((object)$"Relay 3Way Reverse {iRelay3Way_Reverse} failed to turn on.");
                 MessageBox.Show($"Relay 3Way Reverse {iRelay3Way_Reverse} failed to turn on.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
             }
         }
-        else if (!(await cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Reverse, 0)))
+        else if (!(await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Reverse, 0)))
         {
             log.Error((object)$"Relay 3Way Reverse {iRelay3Way_Reverse} failed to turn off.");
             MessageBox.Show($"Relay 3Way Reverse {iRelay3Way_Reverse} failed to turn off.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
         }
     }
-    public string[] GetProcessBefore(string[] proclist,string proc )
+    private async Task<bool> Setting_Pump2Test(int rery = 5)
+    {
+        bool bResult = false;
+        bool result = false;
+        for (int i = 0; i < rery; i++)
+        {
+            result = await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelayPump, 0);
+            if (result)
+            {
+                log.Info((object)$"Relay Pump {iRelayPump} turned off successfully.");
+                break;
+            }
+            log.Warn((object)$"Retry {i + 1}/{rery} to turn off Relay Pump {iRelayPump} failed.");
+        }
+        if (!result) return false;
+        for (int i = 0; i < rery; i++)
+        {
+            result = await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Air_Water, 0);
+            if (result)
+            {
+                log.Info((object)$"Relay Relay3Way_Air_Water {iRelay3Way_Air_Water} turned off successfully.");
+                break;
+            }
+            log.Warn((object)$"Retry {i + 1}/{rery} to turn off Relay3Way_Air_Water {iRelay3Way_Air_Water} failed.");
+        }
+        if (!result) return false;
+        for (int i = 0; i < rery; i++)
+        {
+            result = await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Reverse, 0);
+            if (result)
+            {
+                log.Info((object)$"Relay iRelay3Way_Reverse {iRelay3Way_Reverse} turned off successfully.");
+                break;
+            }
+            log.Warn((object)$"Retry {i + 1}/{rery} to turn off iRelay3Way_Reverse {iRelay3Way_Reverse} failed.");
+        }
+        if (!result) return false;
+        for (int i = 0; i < rery; i++)
+        {
+            result = await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelayPump, 1);
+            if (result)
+            {
+                log.Info((object)$"Relay Pump {iRelayPump} turned on successfully.");
+                break;
+            }
+            log.Warn((object)$"Retry {i + 1}/{rery} to turn on Relay Pump {iRelayPump} failed.");
+        }
+        if (!result) return false;
+        
+        for (int i = 0; i < rery; i++)
+        {
+            int flowRateInt = (int)(ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Rate * 100.0);
+            if (!(await Cls_Interface.cls_ASPcontrol.SetFlowRateCheckResult(iADAFlowRate, flowRateInt)))
+            {
+                log.Error((object)$"Failed to set flow rate to {ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Rate.ToString("0.00")} L/min.");
+                //MessageBox.Show($"Failed to set flow rate to {ClsUnitManagercs.cls_Units[iIndex].iDi_Flow_Rate.ToString("0.00")} L/min.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+            }
+            else
+            {
+                log.Info((object)$"Flow rate for ADA {iADAFlowRate} set to {ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Rate.ToString("0.00")} L/min");
+                bResult = true;
+                break;
+            }
+        }
+        if (!bResult) return false;
+        else
+        {
+            log.Info((object)$"Setting-Up flow test successfully.");
+            bResult = true;
+        }
+        return bResult;
+    }
+    private async Task<bool> Setting_FlushingWash(int rery = 5)
+    {
+        bool bResult = false;
+        for (int i = 0; i < rery; i++)
+        {
+            bool result = await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Reverse, 0);
+            if (result)
+            {
+                bResult = true;
+                log.Info((object)$"Relay iRelay3Way_Reverse {iRelay3Way_Reverse} turned off successfully.");
+                break;
+            }
+            log.Warn((object)$"Retry {i + 1}/{rery} to turn off iRelay3Way_Reverse {iRelay3Way_Reverse} failed.");
+        }
+        if (!bResult) return false;
+        else
+        {
+            log.Info((object)$"Setting-Up flushing successfully.");
+        }
+        
+        return bResult;
+    }
+    private async Task<bool> Setting_FlushingReverse(int rery = 5)
+    {
+        bool bResult = false;
+        
+        for (int i = 0; i < rery; i++)
+        {
+            bool result = await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Reverse, 1);
+            if (result)
+            {
+                bResult = true;
+                log.Info((object)$"Relay iRelay3Way_Reverse {iRelay3Way_Reverse} turned off successfully.");
+                break;
+            }
+            log.Warn((object)$"Retry {i + 1}/{rery} to turn off iRelay3Way_Reverse {iRelay3Way_Reverse} failed.");
+        }
+        if (!bResult) return false;
+        else
+        {
+            log.Info((object)$"Setting-Up flushing successfully.");
+        }
+        
+        return bResult;
+    }
+    private async Task<bool> Setting_Drying(int rery = 5)
+    {
+        bool bResult = false;
+        
+        bool result = false;
+        for (int i = 0; i < rery; i++)
+        {
+            result = await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelayPump, 0);
+            if (result)
+            {
+                log.Info((object)$"Relay Pump {iRelayPump} turned off successfully.");
+                break;
+            }
+            log.Warn((object)$"Retry {i + 1}/{rery} to turn off Relay Pump {iRelayPump} failed.");
+        }
+        if (!result) return false;
+        for (int i = 0; i < rery; i++)
+        {
+            result = await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Reverse, 0);
+            if (result)
+            {
+                log.Info((object)$"Relay iRelay3Way_Reverse {iRelay3Way_Reverse} turned off successfully.");
+                break;
+            }
+            log.Warn((object)$"Retry {i + 1}/{rery} to turn off Relay iRelay3Way_Reverse {iRelay3Way_Reverse} failed.");
+        }
+        if (!result) return false;
+        for (int i = 0; i < rery; i++)
+        {
+            result = await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Air_Water, 1);
+            if (result)
+            {
+                log.Info((object)$"Relay iRelay3Way_Air_Water {iRelay3Way_Reverse} turned on successfully.");
+                break;
+            }
+            log.Warn((object)$"Retry {i + 1}/{rery} to turn off iRelay3Way_Air_Water {iRelay3Way_Reverse} failed.");
+        }
+        if (!result) return false;
+        else
+        {
+            log.Info((object)$"Setting-Up drying successfully.");
+            bResult = true;
+        }
+        return bResult;
+    }
+    private async Task<bool> Setting_ReverseDrying(int rery = 5)
+    {
+        bool bResult = false;
+       
+        bool result = false;
+        for (int i = 0; i < rery; i++)
+        {
+            result = await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelayPump, 0);
+            if (result)
+            {
+                log.Info((object)$"Relay Pump {iRelayPump} turned off successfully.");
+                break;
+            }
+            log.Warn((object)$"Retry {i + 1}/{rery} to turn off Relay Pump {iRelayPump} failed.");
+        }
+        if (!result) return false;
+        
+        for (int i = 0; i < rery; i++)
+        {
+            result = await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Reverse, 1);
+            if (result)
+            {
+                log.Info((object)$"Relay iRelay3Way_Reverse {iRelay3Way_Reverse} turned on successfully.");
+                break;
+            }
+            log.Warn((object)$"Retry {i + 1}/{rery} to turn on Relay iRelay3Way_Reverse {iRelay3Way_Reverse} failed.");
+        }
+        if (!result) return false;
+        
+        for (int i = 0; i < rery; i++)
+        {
+            result = await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Air_Water, 1);
+            if (result)
+            {
+                log.Info((object)$"Relay iRelay3Way_Air_Water {iRelay3Way_Reverse} turned on successfully.");
+                break;
+            }
+            log.Warn((object)$"Retry {i + 1}/{rery} to turn off iRelay3Way_Air_Water {iRelay3Way_Reverse} failed.");
+        }
+        if (!result) return false;
+        else
+        {
+            log.Info((object)$"Setting-Up drying successfully.");
+            bResult = true;
+        }
+        
+        return bResult;
+    }
+    #endregion
+    #region Process Checking
+    public string[] GetProcessBefore(string[] proclist, string proc)
     {
         int index = Array.IndexOf(proclist, proc);
         if (index <= 0)
@@ -524,7 +732,7 @@ public class Cls_SequenceTest
         // Lấy tất cả phần tử từ 0 đến index - 1
         return proclist.Take(index).ToArray();
     }
-    public bool[] GetResultprocessBefore(string[]proccheck)
+    public bool[] GetResultprocessBefore(string[] proccheck)
     {
         bool[] result = new bool[proccheck.Length];
         for (int i = 0; i < proccheck.Length; i++)
@@ -536,7 +744,7 @@ public class Cls_SequenceTest
             if (TableName.Contains("Production_Flow_"))
             {
                 query = $"SELECT [Serial],[Assy_PN],[Date_Time],[Station],[FailCode] " +
-                $"FROM [Production_SZ].[dbo].[{TableName}] where [Serial] ='{_SN}' and [Process_Step] = '{proccheck[i]}' order by Date_Time" ;
+                $"FROM [Production_SZ].[dbo].[{TableName}] where [Serial] ='{_SN}' and [Process_Step] = '{proccheck[i]}' order by Date_Time";
             }
             else
                 query = $"SELECT [Serial],[Assy_PN],[Date_Time],[Station],[FailCode] " +
@@ -547,8 +755,8 @@ public class Cls_SequenceTest
                 foreach (DataRow row in dt.Rows)
                 {
                     string failCode = row["FailCode"]?.ToString().Trim().ToUpper();
-                    if(failCode.Trim().ToUpper() == "OK"|| failCode.Trim().ToUpper() == "PASS")
-                    {                            
+                    if (failCode.Trim().ToUpper() == "OK" || failCode.Trim().ToUpper() == "PASS")
+                    {
                         result[i] = true; // Có ít nhất 1 dòng OK
                         break;
                     }
@@ -563,7 +771,7 @@ public class Cls_SequenceTest
         }
         return result;
     }
-    public System.Data.DataTable GetProcessResultsTable(string[] processList,string sSN)
+    public System.Data.DataTable GetProcessResultsTable(string[] processList, string sSN)
     {
         System.Data.DataTable dtResult = new System.Data.DataTable();
         dtResult.Columns.Add("ProcessName", typeof(string));
@@ -624,10 +832,11 @@ public class Cls_SequenceTest
         }
         return dtResult;
     }
-    public int IsInProcess(string proc,string sSN, ref DataTable dtResult)
+    public int IsInProcess(string proc, string sSN, ref DataTable dtResult)
     {
         string[] proceslist = ClsUnitManagercs.cls_Units[iIndex].verifyFlags;
-        if(proceslist == null || proceslist.Length == 0)
+        string AssyPN = ClsUnitManagercs.cls_Units[iIndex].AssyPN;
+        if (proceslist == null || proceslist.Length == 0)
         {
             return 1;
         }
@@ -635,7 +844,7 @@ public class Cls_SequenceTest
         int procIndex = Array.IndexOf(proceslist, proc);
         if (procIndex == -1)
             return 2; // Không có trong danh sách verifyFlags
-        // Lấy các process đứng trước
+                      // Lấy các process đứng trước
         string[] processesBefore = GetProcessBefore(proceslist, proc);
         // Kiểm tra kết quả PASS/OK của các process trước đó
         bool[] resultBefore = GetResultprocessBefore(processesBefore);
@@ -651,7 +860,23 @@ public class Cls_SequenceTest
         //Check MRB
         if (!GetMRBRecord(sSN))
             return 5;
+        if (ClsUnitManagercs.cls_Units[iIndex].Verify_Linked_Part)
+        {
+            bool linkpart = GetLinkPartRecord(sSN, AssyPN);
+            if (!linkpart) return 6;
+        }
         return 0; // Tất cả các process trước đó đều PASS/OK
+    }
+    public bool GetLinkPartRecord(string sn, string AssyPN)
+    {
+        string query = $"SELECT * FROM [Production_SZ].[dbo].[LCS_LCP_Serial_Numbers_Link] where Serial = '{sn}' and Assy_PN ={AssyPN}";
+        System.Data.DataTable dt = ProductionDB.ExecuteQuery(query);
+        if (dt != null && dt.Rows.Count > 0)
+        {
+            return true;
+        }
+        else
+            return false;
     }
     public bool GetMRBRecord(string sn)
     {
@@ -686,6 +911,8 @@ public class Cls_SequenceTest
                 return "This product already passed in this staion!!!";
             case 5:
                 return "This product is in MRB, please check MRB log!!!";
+            case 6:
+                return "This product is not linked yet!!!";
             default:
                 return $"Error is not define {iCode}";
         }
@@ -708,148 +935,9 @@ public class Cls_SequenceTest
         }
         return true;
     }
+    #endregion
 
-    private async Task<bool> Setting_Pump2Test(int rery = 5)
-    {
-        bool bResult = false;
-        if (_InverterType == StateCommon.InverterType.ASP)
-        {
-            bool result = false;
-            for (int i = 0; i < rery; i++)
-            {
-                result = await cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelayPump, 0);
-                if (result)
-                {
-                    log.Info((object)$"Relay Pump {iRelayPump} turned off successfully.");
-                    break;
-                }
-                log.Warn((object)$"Retry {i + 1}/{rery} to turn off Relay Pump {iRelayPump} failed.");
-            }
-            if (!result) return false;
-        }
-        if (_InverterType == StateCommon.InverterType.ASP)
-        {
-            bool result =false;
-            for (int i = 0; i < rery; i++)
-            {
-                result = await cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Air_Water, 0);
-                if (result)
-                {
-                    log.Info((object)$"Relay Relay3Way_Air_Water {iRelay3Way_Air_Water} turned off successfully.");
-                    break;
-                }
-                log.Warn((object)$"Retry {i + 1}/{rery} to turn off Relay3Way_Air_Water {iRelay3Way_Air_Water} failed.");
-            }
-            if (!result) return false;
-        }
-        if (_InverterType == StateCommon.InverterType.ASP)
-        {
-            bool result =false ;
-            for (int i = 0; i < rery; i++)
-            {
-                result = await cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Reverse, 0);
-                if (result)
-                {
-                    log.Info((object)$"Relay iRelay3Way_Reverse {iRelay3Way_Reverse} turned off successfully.");
-                    break;
-                }
-                log.Warn((object)$"Retry {i + 1}/{rery} to turn off iRelay3Way_Reverse {iRelay3Way_Reverse} failed.");
-            }
-            if (!result) return false;
-        }
-        if (_InverterType == StateCommon.InverterType.ASP)
-        {
-            bool result = false ;
-            for (int i = 0; i < rery; i++)
-            {
-                result = await cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelayPump, 1);
-                if (result)
-                {
-                    log.Info((object)$"Relay Pump {iRelayPump} turned on successfully.");
-                    break;
-                }
-                log.Warn((object)$"Retry {i + 1}/{rery} to turn on Relay Pump {iRelayPump} failed.");
-            }
-            if (!result) return false;
-        }
-        if (_InverterType == StateCommon.InverterType.ASP)
-        {
-            for (int i = 0; i < rery; i++)
-            {
-                int flowRateInt = (int)(ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Rate * 100.0);
-                if (!(await cls_ASPcontrol.SetFlowRateCheckResult(iADAFlowRate, flowRateInt)))
-                {
-                    log.Error((object)$"Failed to set flow rate to {ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Rate.ToString("0.00")} L/min.");
-                    //MessageBox.Show($"Failed to set flow rate to {ClsUnitManagercs.cls_Units[iIndex].iDi_Flow_Rate.ToString("0.00")} L/min.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-                }
-                else
-                {
-                    log.Info((object)$"Flow rate for ADA {iADAFlowRate} set to {ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Rate.ToString("0.00")} L/min");
-                    bResult = true;
-                    break;
-                }
-            }
-            if (!bResult) return false;
-            else
-            {
-                log.Info((object)$"Setting-Up flow test successfully.");
-                bResult = true;
-            }
-        }
-        return bResult;
-    }
-    private async Task<bool> Setting_FlushingWash(int rery =5)
-    {
-        bool bResult = false;
-        if (_InverterType == StateCommon.InverterType.ASP)
-        {
-            for (int i = 0; i < rery; i++)
-            {
-                bool result = await cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Reverse, 0);
-                if (result)
-                {
-                    bResult = true;
-                    log.Info((object)$"Relay iRelay3Way_Reverse {iRelay3Way_Reverse} turned off successfully.");
-                    break;
-                }
-                log.Warn((object)$"Retry {i + 1}/{rery} to turn off iRelay3Way_Reverse {iRelay3Way_Reverse} failed.");
-            }
-            if (!bResult) return false;
-            else
-            {
-                log.Info((object)$"Setting-Up flushing successfully.");
-            }
-        }
-        return bResult;
-    }
-    private async Task<bool> Setting_FlushingReverse(int rery = 5)
-    {
-        bool bResult = false;
-        if (_InverterType == StateCommon.InverterType.ASP)
-        {
-            for (int i = 0; i < rery; i++)
-            {
-                bool result = await cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Reverse, 1);
-                if (result)
-                {
-                    bResult = true;
-                    log.Info((object)$"Relay iRelay3Way_Reverse {iRelay3Way_Reverse} turned off successfully.");
-                    break;
-                }
-                log.Warn((object)$"Retry {i + 1}/{rery} to turn off iRelay3Way_Reverse {iRelay3Way_Reverse} failed.");
-            }
-            if (!bResult) return false;
-            else
-            {
-                log.Info((object)$"Setting-Up flushing successfully.");
-            }
-        }
-        return bResult;
-    }
-    private void SaveLocalLog()
-    {
-        string pathlog = "C:\\Aavid_Test\\Datalog";
-    }
+    #region Log to DB
     private DateTime GetDateTimefromDB()
     {
         DateTime serverTime;
@@ -872,136 +960,32 @@ public class Cls_SequenceTest
         }
         return serverTime;
     }
-    public bool SavetoDBMonths_Log(string SN, string PN, string StationID, string FailCode,string proc,string step)
+    public bool SavetoDBMonths_Log(string SN, string PN, string StationID, string FailCode, string proc, string step)
     {
         DateTime dt = GetDateTimefromDB();
-        bool b = ProductionDB.SaveToLogMonths_LogTable(SN, PN,dt,StationID, FailCode, proc, step);   
+        bool b = ProductionDB.SaveToLogMonths_LogTable(SN, PN, dt, StationID, FailCode, proc, step);
         return b;
     }
-    public bool SaveToDBDIWaterWashLog(string SN, string PN,string wo, string StationID, string FailCode, int step, float flowrate,float waterpressure,float airpressure)
+    public bool SaveToDBDIWaterWashLog(string SN, string PN, string wo, string StationID, string FailCode, int step, float flowrate, float waterpressure, float airpressure)
     {
         DateTime dt = GetDateTimefromDB();
-        bool b = ProductionDB.SaveToDIWaterWashLog(SN, PN, StationID, FailCode,"",_TestType,wo, step,flowrate,waterpressure,airpressure);
+        bool b = ProductionDB.SaveToDIWaterWashLog(SN, PN, StationID, FailCode, "", _TestType, wo, step, iIndex + 1, flowrate, waterpressure, airpressure);
         return b;
     }
-    private async Task<bool> Setting_Drying(int rery = 5)
-    {
-        bool bResult = false;
-        if (_InverterType == StateCommon.InverterType.ASP)
-        {
-            bool result = false;
-            for (int i = 0; i < rery; i++)
-            {
-                result = await cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelayPump, 0);
-                if (result)
-                {
-                    log.Info((object)$"Relay Pump {iRelayPump} turned off successfully.");
-                    break;
-                }
-                log.Warn((object)$"Retry {i + 1}/{rery} to turn off Relay Pump {iRelayPump} failed.");
-            }
-            if (!result) return false;
-        }
-        if (_InverterType == StateCommon.InverterType.ASP)
-        {
-            bool result = false;
-            for (int i = 0; i < rery; i++)
-            {
-                result = await cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Reverse, 0);
-                if (result)
-                {
-                    log.Info((object)$"Relay iRelay3Way_Reverse {iRelay3Way_Reverse} turned off successfully.");
-                    break;
-                }
-                log.Warn((object)$"Retry {i + 1}/{rery} to turn off Relay iRelay3Way_Reverse {iRelay3Way_Reverse} failed.");
-            }
-            if (!result) return false;
-        }
-        if (_InverterType == StateCommon.InverterType.ASP)
-        {
-            bool result = false;
-            for (int i = 0; i < rery; i++)
-            {
-                result = await cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Air_Water, 1);
-                if (result)
-                {
-                    log.Info((object)$"Relay iRelay3Way_Air_Water {iRelay3Way_Reverse} turned on successfully.");
-                    break;
-                }
-                log.Warn((object)$"Retry {i + 1}/{rery} to turn off iRelay3Way_Air_Water {iRelay3Way_Reverse} failed.");
-            }
-            if (!result) return false;
-            else
-            {
-                log.Info((object)$"Setting-Up drying successfully.");
-                bResult = true;
-            }
-        }
-        return bResult;
-    }
-    private async Task<bool> Setting_ReverseDrying(int rery = 5)
-    {
-        bool bResult = false;
-        if (_InverterType == StateCommon.InverterType.ASP)
-        {
-            bool result = false;
-            for (int i = 0; i < rery; i++)
-            {
-                result = await cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelayPump, 0);
-                if (result)
-                {
-                    log.Info((object)$"Relay Pump {iRelayPump} turned off successfully.");
-                    break;
-                }
-                log.Warn((object)$"Retry {i + 1}/{rery} to turn off Relay Pump {iRelayPump} failed.");
-            }
-            if (!result) return false;
-        }
-        if (_InverterType == StateCommon.InverterType.ASP)
-        {
-            bool result = false;
-            for (int i = 0; i < rery; i++)
-            {
-                result = await cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Reverse, 1);
-                if (result)
-                {
-                    log.Info((object)$"Relay iRelay3Way_Reverse {iRelay3Way_Reverse} turned on successfully.");
-                    break;
-                }
-                log.Warn((object)$"Retry {i + 1}/{rery} to turn on Relay iRelay3Way_Reverse {iRelay3Way_Reverse} failed.");
-            }
-            if (!result) return false;
-        }
-        if (_InverterType == StateCommon.InverterType.ASP)
-        {
-            bool result = false;
-            for (int i = 0; i < rery; i++)
-            {
-                result = await cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Air_Water, 1);
-                if (result)
-                {
-                    log.Info((object)$"Relay iRelay3Way_Air_Water {iRelay3Way_Reverse} turned on successfully.");
-                    break;
-                }
-                log.Warn((object)$"Retry {i + 1}/{rery} to turn off iRelay3Way_Air_Water {iRelay3Way_Reverse} failed.");
-            }
-            if (!result) return false;
-            else
-            {
-                log.Info((object)$"Setting-Up drying successfully.");
-                bResult = true;
-            }
-        }
-        return bResult;
-    }
+    #endregion
     public async void LoopTest()
     {
-            
-        if (!_AutoMode)
+
+        if (!StateCommon.bAuto)
         {
             return;
         }
-        if(_testSeq == TestSeq.ERROR)
+        if (_bTestAbort)
+        {
+            _testSeq = TestSeq.ABORT;
+            _bTestAbort = false;
+        }
+        if (_testSeq == TestSeq.ERROR)
         {
             sw_drying.Stop();
             sw_flush.Stop();
@@ -1021,8 +1005,40 @@ public class Cls_SequenceTest
             _SN = "";
             return;
         }
+        
         switch (_testSeq)
         {
+            case TestSeq.ABORT:
+                _testSeq = TestSeq.NONE;
+                await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelayPump, 0);
+                await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Air_Water, 0);
+                await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Reverse, 0);
+                TestResult = "ABORT";
+                ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.Error;
+                _testSeq = TestSeq.END;
+                break;
+            case TestSeq.FIXTURE_SCAN:
+                _testSeq = TestSeq.NONE;
+                var result1 = DialogResult.None;
+                _mainForm.Invoke(new Action(() =>
+                {
+                    var dialog = new FrmScanQRCable(iIndex+1, ClsUnitManagercs.cls_Units[iIndex].iQDLifeTime, ClsUnitManagercs.cls_Units[iIndex].StationID);
+                    dialog.StartPosition = FormStartPosition.CenterScreen; // ✅ hiện giữa màn hình
+                    result1 = dialog.ShowDialog(_mainForm);   // hoặc ShowDialog(_mainForm)
+                    if (result1 == DialogResult.OK)
+                        _testSeq = TestSeq.FIXTURE_SCAN_OK;
+                    else
+                        _testSeq = TestSeq.FIXTURE_SCAN_NG;
+                }));
+                break;
+            case TestSeq.FIXTURE_SCAN_NG:
+                _testSeq = TestSeq.ERROR;
+                break;
+            case TestSeq.FIXTURE_SCAN_OK:
+                var logqd = LifeTimeLogManager.LoadLog(ClsDefine.DefineSystem.sQDlogpath);
+                iQDTimeused = logqd != null ? logqd.TimeUsed : 0;
+                _testSeq = TestSeq.SN_INSERT;
+                break;
             case TestSeq.SN_INSERT:
                 {
                     int num = 10000;
@@ -1062,7 +1078,7 @@ public class Cls_SequenceTest
                         {
                             var dialog = new FrmMessageError(_SN + " is invalid. Please re-enter.", Color.Red, Color.Black);
                             dialog.StartPosition = FormStartPosition.CenterScreen; // ✅ hiện giữa màn hình
-                            dialog.Show(_mainForm);   // hoặc ShowDialog(_mainForm)
+                            dialog.ShowDialog(_mainForm);   // hoặc ShowDialog(_mainForm)
                             dialog.BringToFront();
                         }));
                         log.Warn((object)("SN " + _SN + " is invalid. Please re-enter."));
@@ -1073,7 +1089,7 @@ public class Cls_SequenceTest
                     _testSeq = TestSeq.SN_CHECK_ROUTER;
                 break;
             case TestSeq.SN_CHECK_ROUTER:
-                if(TestType != "Engineering Test")
+                if (TestType != "Engineering Test")
                 {
                     DataTable dtResult = new DataTable();
                     int iCheckRouter = IsInProcess("DI_Water_Wash", _SN, ref dtResult);
@@ -1084,7 +1100,7 @@ public class Cls_SequenceTest
                         // gọi mở form phụ trên UI thread
                         _mainForm.Invoke(new Action(() =>
                         {
-                            var dialog = new FrmMessageError("SN " + _SN  +" " + GetProcesCodeError(iCheckRouter), Color.Red, Color.Black);
+                            var dialog = new FrmMessageError("SN " + _SN + " " + GetProcesCodeError(iCheckRouter), Color.Red, Color.Black);
                             dialog.StartPosition = FormStartPosition.CenterScreen; // ✅ hiện giữa màn hình
                             dialog.Show(_mainForm);   // hoặc ShowDialog(_mainForm)
                             dialog.BringToFront();
@@ -1097,7 +1113,7 @@ public class Cls_SequenceTest
                     _testSeq = TestSeq.SN_CHECK_ROUTER_OK;
                 break;
             case TestSeq.SN_CHECK_ROUTER_OK:
-                ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = StateCommon.ProcessState.Running;
+                ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.Running;
                 _StepTesting = 0;
                 _testSeq = TestSeq.SETTING_PUMP;
                 break;
@@ -1112,9 +1128,8 @@ public class Cls_SequenceTest
                 {
                     log.Error((object)$"Failed to set pump and relays for SN {_SN}.");
                     //MessageBox.Show($"Failed to set pump and relays for SN {_SN}.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-                    await ShowLighTowerError();
+                    ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.Error;
                     _testSeq = TestSeq.ERROR;
-                    ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = StateCommon.ProcessState.Error;
                 }
                 break;
             case TestSeq.TURN_FLUSHING_WASHING:
@@ -1128,26 +1143,31 @@ public class Cls_SequenceTest
                 {
                     log.Error((object)$"Failed to flushing relay set for SN {_SN}.");
                     //MessageBox.Show($"Failed to flushing relay set for SN {_SN}.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-                    await ShowLighTowerError();
+                    
                     _testSeq = TestSeq.ERROR;
-                    ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = StateCommon.ProcessState.Error; 
+                    ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.Error;
                 }
-                break;  
+                break;
             case TestSeq.PRE_WASHING:
                 sw_prewash = new Stopwatch();
                 sw_prewash.Start();
                 while (sw_prewash.ElapsedMilliseconds < ClsUnitManagercs.cls_Units[iIndex].iPre_Washing_Time * 1000)
                 {
-                    if (ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process == StateCommon.ProcessState.Error)
+                    if (ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process == Cls_SequenceCommon.SequenceState.Error)
                     {
                         log.Error((object)$"Process error during testing for SN {_SN}.");
-                        await ShowLighTowerError();
                         _testSeq = TestSeq.ERROR;
                         return;
                     }
+                    if(_bTestAbort)
+                    {
+                        log.Error((object)$"Process abort during testing for SN {_SN}.");
+                        _testSeq = TestSeq.ABORT;
+                        return;
+                    }    
                     Thread.Sleep(1000);
                 }
-                sw_prewash.Stop();
+                sw_prewash.Reset();
                 _testSeq = TestSeq.FLUSHING_WASHING;
                 break;
             case TestSeq.FLUSHING_WASHING:
@@ -1157,18 +1177,27 @@ public class Cls_SequenceTest
                 _bGetWaterPressure = true;
                 while (sw_flush.ElapsedMilliseconds < ClsUnitManagercs.cls_Units[iIndex].iWashing_Time * 1000)
                 {
-                    if (ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process == StateCommon.ProcessState.Error)
+                    if (ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process == Cls_SequenceCommon.SequenceState.Error)
                     {
                         log.Error((object)$"Process error during testing for SN {_SN}.");
-                        await ShowLighTowerError();
+                        
                         _testSeq = TestSeq.ERROR;
                         return;
                     }
+                    if (_bTestAbort)
+                    {
+                        log.Error((object)$"Process abort during testing for SN {_SN}.");
+                        _testSeq = TestSeq.ABORT;
+                        return;
+                    }
                     Thread.Sleep(1000);
-                    ListFlowRates.Add(FlowRate);
-                    ListWaterPressures.Add(WaterPressure);
+                    if(sw_flush.Elapsed.TotalSeconds > ClsDefine.DefineTesting.Time2stable)
+                    {
+                        ListFlowRates.Add(FlowRate);
+                        ListWaterPressures.Add(WaterPressure);
+                    }    
                 }
-                sw_flush.Stop();
+                sw_flush.Reset();
                 _testSeq = TestSeq.TURN_REVERSE_WASHING;
                 break;
             case TestSeq.TURN_REVERSE_WASHING:
@@ -1184,9 +1213,9 @@ public class Cls_SequenceTest
                     {
                         log.Error((object)$"Failed to Reverse relay set for SN {_SN}.");
                         //MessageBox.Show($"Failed to Reverse relay set for SN {_SN}.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-                        await ShowLighTowerError();
+                      
                         _testSeq = TestSeq.ERROR;
-                        ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = StateCommon.ProcessState.Error;
+                        ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.Error;
                     }
                 }
                 else
@@ -1200,18 +1229,29 @@ public class Cls_SequenceTest
                     sw_reverse.Start();
                     while (sw_reverse.ElapsedMilliseconds < ClsUnitManagercs.cls_Units[iIndex].iDI_Reverse_Washing_Time * 1000)
                     {
-                        if (ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process == StateCommon.ProcessState.Error)
+                        if (ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process == Cls_SequenceCommon.SequenceState.Error)
                         {
                             log.Error((object)$"Process error during testing for SN {_SN}.");
-                            await ShowLighTowerError();
+                            
                             _testSeq = TestSeq.ERROR;
                             return;
                         }
+                        if (_bTestAbort)
+                        {
+                            log.Error((object)$"Process abort during testing for SN {_SN}.");
+                            _testSeq = TestSeq.ABORT;
+                            return;
+                        }
                         Thread.Sleep(1000);
+                        if (sw_reverse.Elapsed.TotalSeconds > ClsDefine.DefineTesting.Time2stable)
+                        {
+                            ListFlowRates.Add(FlowRate);
+                            ListWaterPressures.Add(WaterPressure);
+                        }
                     }
-                    sw_reverse.Stop();
-                }    
-                if(_StepTesting >= ClsUnitManagercs.cls_Units[iIndex].iWash_Cycle)
+                    sw_reverse.Reset();
+                }
+                if (_StepTesting >= ClsUnitManagercs.cls_Units[iIndex].iWash_Cycle)
                 {
                     _testSeq = TestSeq.TURN_DRYING;
                 }
@@ -1231,9 +1271,9 @@ public class Cls_SequenceTest
                 {
                     log.Error((object)$"Failed to Drying relay set for SN {_SN}.");
                     //MessageBox.Show($"Failed to Drying relay set for SN {_SN}.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-                    await ShowLighTowerError();
+                    
                     _testSeq = TestSeq.ERROR;
-                    ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = StateCommon.ProcessState.Error;
+                    ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.Error;
                 }
                 break;
             case TestSeq.DRYING:
@@ -1244,18 +1284,27 @@ public class Cls_SequenceTest
                 _bGetAirPressure = true;
                 while (sw_drying.ElapsedMilliseconds < ClsUnitManagercs.cls_Units[iIndex].iDI_Drying_Time * 1000)
                 {
-                    if (ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process == StateCommon.ProcessState.Error)
+                    if (ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process == Cls_SequenceCommon.SequenceState.Error)
                     {
                         log.Error((object)$"Process error during testing for SN {_SN}.");
-                        await ShowLighTowerError();
+                        
                         _testSeq = TestSeq.ERROR;
                         return;
                     }
+                    if (_bTestAbort)
+                    {
+                        log.Error((object)$"Process abort during testing for SN {_SN}.");
+                        _testSeq = TestSeq.ABORT;
+                        return;
+                    }
                     Thread.Sleep(1000);
-                    ListAirPressures.Add(AirPressure);
-                    ListAirFlow.Add(AirFlow);
+                    if (sw_drying.Elapsed.TotalSeconds > ClsDefine.DefineTesting.Time2stable)
+                    {
+                        ListAirPressures.Add(AirPressure);
+                        ListAirFlow.Add(AirFlow);
+                    }
                 }
-                sw_drying.Stop();
+                sw_drying.Reset();
                 _testSeq = TestSeq.TURN_REVERSE_DRYING;
                 break;
             case TestSeq.TURN_REVERSE_DRYING:
@@ -1271,9 +1320,9 @@ public class Cls_SequenceTest
                     {
                         log.Error((object)$"Failed to Reverse Drying relay set for SN {_SN}.");
                         //MessageBox.Show($"Failed to Reverse Drying relay set for SN {_SN}.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-                        await ShowLighTowerError();
+                        
                         _testSeq = TestSeq.ERROR;
-                        ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = StateCommon.ProcessState.Error;
+                        ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.Error;
                     }
                 }
                 else
@@ -1286,18 +1335,27 @@ public class Cls_SequenceTest
                     sw_reverse_drying.Start();
                     while (sw_reverse_drying.ElapsedMilliseconds < ClsUnitManagercs.cls_Units[iIndex].iReverse_DI_Drying_Time * 1000)
                     {
-                        if (ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process == StateCommon.ProcessState.Error)
+                        if (ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process == Cls_SequenceCommon.SequenceState.Error)
                         {
                             log.Error((object)$"Process error during testing for SN {_SN}.");
-                            await ShowLighTowerError();
+                            
                             _testSeq = TestSeq.ERROR;
                             return;
                         }
+                        if (_bTestAbort)
+                        {
+                            log.Error((object)$"Process abort during testing for SN {_SN}.");
+                            _testSeq = TestSeq.ABORT;
+                            return;
+                        }
                         Thread.Sleep(1000);
-                        ListAirPressures.Add(AirPressure);
-                        ListAirFlow.Add(AirFlow);
+                        if (sw_reverse_drying.Elapsed.TotalSeconds > ClsDefine.DefineTesting.Time2stable)
+                        {
+                            ListAirPressures.Add(AirPressure);
+                            ListAirFlow.Add(AirFlow);
+                        }
                     }
-                    sw_reverse_drying.Stop();
+                    sw_reverse_drying.Reset();
                 }
                 _testSeq = TestSeq.CHECKING_RESULT;
                 break;
@@ -1310,28 +1368,29 @@ public class Cls_SequenceTest
                 {
                     log.Error((object)$"No data collected during testing for SN {_SN}.");
                     //MessageBox.Show("No data collected during testing. Please check the setup.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-                    await ShowLighTowerError();
+                    
                     _testSeq = TestSeq.ERROR;
-                    ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = StateCommon.ProcessState.Error;
+                    ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.Error;
                     return;
                 }
-                double flowrateMax = ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Rate + ((ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Rate * ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Tol)/100);
-                double flowrateMin = ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Rate - ((ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Rate * ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Tol)/100);
+                double flowrateMax = ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Rate + ((ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Rate * ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Tol) / 100);
+                double flowrateMin = ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Rate - ((ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Rate * ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Tol) / 100);
                 int times2ignoreFlowRate = (ClsUnitManagercs.cls_Units[iIndex].iWashing_Time / 100) * 15;
                 if (times2ignoreFlowRate < 15) times2ignoreFlowRate = 15;
-                var checkFlowrate = CheckOutSpec(ListFlowRates, flowrateMin, flowrateMax, 5);
-                if(!checkFlowrate.IsPass)
+                int NGAllow = ClsUnitManagercs.cls_Units[iIndex].bReverse_DI_Flushing_Flow ? ClsUnitManagercs.cls_Units[iIndex].iWash_Cycle * 2 : ClsUnitManagercs.cls_Units[iIndex].iWash_Cycle;
+                var checkFlowrate = CheckOutSpec(ListFlowRates, flowrateMin, flowrateMax, 5 * NGAllow);
+                if (!checkFlowrate.IsPass)
                 {
                     TestResult = "FAIL";
                     _testSeq = TestSeq.TEST_FAIL;
                     if (checkFlowrate.MinUnder != null)
                     {
-                        TestResult = "Flow_Low";
+                        TestResult = "LP-030-EQ-003";
                         FlowRate = checkFlowrate.MinUnder ?? 0.0;
                     }
                     else
                     {
-                        TestResult = "Flow_Hi";
+                        TestResult = "LP-030-EQ-004";
                         FlowRate = checkFlowrate.MaxOver ?? 0.0;
                     }
                 }
@@ -1341,21 +1400,21 @@ public class Cls_SequenceTest
                 }
                 double AirpressureMax = ClsUnitManagercs.cls_Units[iIndex].dDI_Max_AirPressure;
                 double AirpressureMin = ClsUnitManagercs.cls_Units[iIndex].dDI_Min_AirPressure;
-                int times2ignoreAir = (ClsUnitManagercs.cls_Units[iIndex].iDI_Drying_Time/100) * 15;
+                int times2ignoreAir = (ClsUnitManagercs.cls_Units[iIndex].iDI_Drying_Time / 100) * 15;
                 if (times2ignoreAir < 15) times2ignoreAir = 15;
                 var checkAirpressure = CheckOutSpec(ListAirPressures, AirpressureMin, AirpressureMax, 5);
-                if(!checkAirpressure.IsPass)
+                if (!checkAirpressure.IsPass)
                 {
                     TestResult = "FAIL";
                     _testSeq = TestSeq.TEST_FAIL;
                     if (checkAirpressure.MinUnder != null)
                     {
-                        TestResult = "Air_Pr_Low";
+                        TestResult = "LP-030-EQ-001";
                         AirPressure = checkAirpressure.MinUnder ?? 0.0;
                     }
                     else
                     {
-                        TestResult = "Air_Pr_Hi";
+                        TestResult = "LP-030-EQ-002";
                         AirPressure = checkAirpressure.MaxOver ?? 0.0;
                     }
                 }
@@ -1366,19 +1425,19 @@ public class Cls_SequenceTest
                 double WaterpressureMax = ClsUnitManagercs.cls_Units[iIndex].dDI_Max_WaterPressure;
                 double WaterpressureMin = ClsUnitManagercs.cls_Units[iIndex].dDI_Min_WaterPressure;
                 var checkWaterpressure = CheckOutSpec(ListWaterPressures, WaterpressureMin, WaterpressureMax, 5);
-                    
+
                 if (!checkWaterpressure.IsPass)
                 {
                     TestResult = "FAIL";
                     _testSeq = TestSeq.TEST_FAIL;
                     if (checkWaterpressure.MinUnder != null)
                     {
-                        TestResult = "Water_Pr_Low";
+                        TestResult = "LP-030-EQ-006";
                         WaterPressure = checkWaterpressure.MinUnder ?? 0.0;
                     }
                     else
                     {
-                        TestResult = "Water_Pr_Hi";
+                        TestResult = "LP-030-EQ-005";
                         WaterPressure = checkWaterpressure.MaxOver ?? 0.0;
                     }
                 }
@@ -1390,7 +1449,7 @@ public class Cls_SequenceTest
                 {
                     //Check huminity
                 }
-                if(_testSeq != TestSeq.TEST_FAIL)
+                if (_testSeq != TestSeq.TEST_FAIL)
                 {
                     _testSeq = TestSeq.TEST_PASS;
                 }
@@ -1400,12 +1459,12 @@ public class Cls_SequenceTest
                 }
                 break;
             case TestSeq.TEST_PASS:
-                TestResult ="PASS";
-                ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = StateCommon.ProcessState.CompletedPass;
+                TestResult = "PASS";
+                ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.CompletedPass;
                 _testSeq = TestSeq.CREATE_LOCAL_LOG;
                 break;
             case TestSeq.TEST_FAIL:
-                ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = StateCommon.ProcessState.CompletedFail;
+                ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.CompletedFail;
                 _testSeq = TestSeq.CREATE_LOCAL_LOG;
                 break;
             case TestSeq.CREATE_LOCAL_LOG:
@@ -1434,20 +1493,20 @@ public class Cls_SequenceTest
                 string PN = ClsUnitManagercs.cls_Units[iIndex].AssyPN;
                 string WO = ClsUnitManagercs.cls_Units[iIndex].WO;
                 string Station = ClsUnitManagercs.cls_Units[iIndex].StationID;
-                if (TestType == "Engineering Test") TestResult = "FAIL";
-                if (!SavetoDBMonths_Log(_SN, PN ,Station, TestResult, "DI_Water_Wash" , "0"))
+                if (TestType == "Engineering Test") TestResult = "LP-030-EQ-007";
+                if (!SavetoDBMonths_Log(_SN, PN, Station, TestResult, "DI_Water_Wash", "0"))
                 {
                     //MessageBox.Show("Failed to save DB months log failed.");
                     log.Error("Failed to save DB months log failed.");
-                    await ShowLighTowerError();
+                    
                     _testSeq = TestSeq.ERROR;
                     break;
                 }
-                if (!SaveToDBDIWaterWashLog(_SN, PN,WO, Station, TestResult,0, (float)FlowRate, (float)WaterPressure, (float)AirPressure))
+                if (!SaveToDBDIWaterWashLog(_SN, PN, WO, Station, TestResult, 0, (float)FlowRate, (float)WaterPressure, (float)AirPressure))
                 {
                     //MessageBox.Show("Failed to save DB DI_Water log failed.");
                     log.Error("Failed to save DB DI_Water log failed.");
-                    await ShowLighTowerError();
+                    
                     _testSeq = TestSeq.ERROR;
                     break;
                 }
@@ -1461,16 +1520,15 @@ public class Cls_SequenceTest
                 ListWaterPressures = new List<double>();
                 ListFlowRates = new List<double>();
                 _testSeq = TestSeq.WAIT;
+                if (TestType == "Engineering Test")
+                    TestType = "Production Test";
+                OnRequestUpdateResult?.Invoke();
                 break;
         }
     }
     public void AddProcessLogTest(DataTable dtResult)
     {
-        OnRequestAddProcessLogTest?.Invoke(this, new ProcessLogEventArgs
-        {
-            UnitIndex = this.iIndex,
-            LogData = dtResult
-        });
+        OnRequestAddProcessLogTest?.Invoke(this.iIndex, dtResult);
     }
     private CheckResult CheckOutSpec(List<double> values, double min, double max, int maxOutSpec = 5)
     {

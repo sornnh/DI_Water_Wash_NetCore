@@ -43,42 +43,42 @@ partial class UC_Interface
         cbbASPParity = new ComboBox();
         cbbASPStopBit = new ComboBox();
         lb_ASPConnected = new Label();
+        label25 = new Label();
+        label26 = new Label();
+        btn_ChangeMode = new Button();
         rtb_ASPPortBuffer = new RichTextBox();
         tableLayoutPanel4 = new TableLayoutPanel();
         richTextBox1 = new RichTextBox();
-        tableLayoutPanel7 = new TableLayoutPanel();
-        tbl_RelayControl = new TableLayoutPanel();
-        tableLayoutPanel8 = new TableLayoutPanel();
-        label16 = new Label();
-        btn_GetAllRelay = new Button();
-        btn_ChangeMode = new Button();
-        label26 = new Label();
-        label25 = new Label();
-        tableLayoutPanel6 = new TableLayoutPanel();
-        label6 = new Label();
-        lbl_ADV1 = new Label();
-        label8 = new Label();
-        lbl_ADA1 = new Label();
-        label10 = new Label();
-        lbl_ADC1 = new Label();
-        label12 = new Label();
-        lbl_ADV2 = new Label();
-        label14 = new Label();
-        lbl_ADA2 = new Label();
-        label17 = new Label();
-        lbl_ADC2 = new Label();
-        label19 = new Label();
-        lbl_ADV3 = new Label();
-        label21 = new Label();
-        lbl_ADA3 = new Label();
-        label23 = new Label();
-        lbl_ADC3 = new Label();
-        label27 = new Label();
-        lbl_ADV4 = new Label();
-        label29 = new Label();
-        lbl_ADA4 = new Label();
-        label31 = new Label();
+        tbl_Control = new TableLayoutPanel();
+        label15 = new Label();
+        label13 = new Label();
+        label11 = new Label();
+        label9 = new Label();
+        label7 = new Label();
         lbl_ADC4 = new Label();
+        label31 = new Label();
+        lbl_ADA4 = new Label();
+        label29 = new Label();
+        lbl_ADV4 = new Label();
+        label27 = new Label();
+        lbl_ADC3 = new Label();
+        label23 = new Label();
+        lbl_ADA3 = new Label();
+        label21 = new Label();
+        lbl_ADV3 = new Label();
+        label19 = new Label();
+        lbl_ADC2 = new Label();
+        label17 = new Label();
+        lbl_ADA2 = new Label();
+        label14 = new Label();
+        lbl_ADV2 = new Label();
+        label12 = new Label();
+        lbl_ADC1 = new Label();
+        label10 = new Label();
+        lbl_ADA1 = new Label();
+        label8 = new Label();
+        lbl_ADV1 = new Label();
+        label6 = new Label();
         label33 = new Label();
         label34 = new Label();
         label35 = new Label();
@@ -87,13 +87,35 @@ partial class UC_Interface
         lbl_ADC6 = new Label();
         lbl_ADC7 = new Label();
         lbl_ADC8 = new Label();
+        btn_SetFlow1 = new Button();
+        btn_SetFlow2 = new Button();
+        btn_SetFlow3 = new Button();
+        btn_SetFlow4 = new Button();
+        numFlow1 = new NumericUpDown();
+        numFlow2 = new NumericUpDown();
+        numFlow3 = new NumericUpDown();
+        numFlow4 = new NumericUpDown();
+        label18 = new Label();
+        label20 = new Label();
+        label22 = new Label();
+        label24 = new Label();
+        label28 = new Label();
+        tableLayoutPanel7 = new TableLayoutPanel();
+        tbl_RelayControl = new TableLayoutPanel();
+        tableLayoutPanel8 = new TableLayoutPanel();
+        label16 = new Label();
+        btn_GetAllRelay = new Button();
         tableLayoutPanel1.SuspendLayout();
         tableLayoutPanel2.SuspendLayout();
         tableLayoutPanel3.SuspendLayout();
         tableLayoutPanel4.SuspendLayout();
+        tbl_Control.SuspendLayout();
+        ((System.ComponentModel.ISupportInitialize)numFlow1).BeginInit();
+        ((System.ComponentModel.ISupportInitialize)numFlow2).BeginInit();
+        ((System.ComponentModel.ISupportInitialize)numFlow3).BeginInit();
+        ((System.ComponentModel.ISupportInitialize)numFlow4).BeginInit();
         tableLayoutPanel7.SuspendLayout();
         tableLayoutPanel8.SuspendLayout();
-        tableLayoutPanel6.SuspendLayout();
         SuspendLayout();
         // 
         // tableLayoutPanel1
@@ -146,6 +168,9 @@ partial class UC_Interface
         tableLayoutPanel3.Controls.Add(cbbASPParity, 1, 3);
         tableLayoutPanel3.Controls.Add(cbbASPStopBit, 1, 4);
         tableLayoutPanel3.Controls.Add(lb_ASPConnected, 0, 6);
+        tableLayoutPanel3.Controls.Add(label25, 0, 8);
+        tableLayoutPanel3.Controls.Add(label26, 1, 8);
+        tableLayoutPanel3.Controls.Add(btn_ChangeMode, 1, 9);
         tableLayoutPanel3.Dock = DockStyle.Fill;
         tableLayoutPanel3.Location = new Point(3, 3);
         tableLayoutPanel3.Name = "tableLayoutPanel3";
@@ -301,6 +326,41 @@ partial class UC_Interface
         lb_ASPConnected.Text = "Disconnect";
         lb_ASPConnected.TextAlign = ContentAlignment.MiddleCenter;
         // 
+        // label25
+        // 
+        label25.AutoSize = true;
+        label25.Dock = DockStyle.Fill;
+        label25.Location = new Point(3, 312);
+        label25.Name = "label25";
+        label25.Size = new Size(157, 39);
+        label25.TabIndex = 16;
+        label25.Text = "Stage:";
+        label25.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // label26
+        // 
+        label26.AutoSize = true;
+        label26.BackColor = SystemColors.ControlLightLight;
+        label26.BorderStyle = BorderStyle.FixedSingle;
+        label26.Dock = DockStyle.Fill;
+        label26.Location = new Point(166, 312);
+        label26.Name = "label26";
+        label26.Size = new Size(223, 39);
+        label26.TabIndex = 17;
+        label26.Text = "Idle";
+        label26.TextAlign = ContentAlignment.MiddleCenter;
+        // 
+        // btn_ChangeMode
+        // 
+        btn_ChangeMode.Dock = DockStyle.Fill;
+        btn_ChangeMode.Location = new Point(166, 354);
+        btn_ChangeMode.Name = "btn_ChangeMode";
+        btn_ChangeMode.Size = new Size(223, 33);
+        btn_ChangeMode.TabIndex = 30;
+        btn_ChangeMode.Text = "Manual";
+        btn_ChangeMode.UseVisualStyleBackColor = true;
+        btn_ChangeMode.Click += btn_ChangeMode_Click;
+        // 
         // rtb_ASPPortBuffer
         // 
         rtb_ASPPortBuffer.Dock = DockStyle.Fill;
@@ -314,11 +374,11 @@ partial class UC_Interface
         // 
         tableLayoutPanel4.ColumnCount = 3;
         tableLayoutPanel4.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20.998724F));
-        tableLayoutPanel4.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 56.4446831F));
-        tableLayoutPanel4.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 22.610096F));
+        tableLayoutPanel4.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 51.396347F));
+        tableLayoutPanel4.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 27.658432F));
         tableLayoutPanel4.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
         tableLayoutPanel4.Controls.Add(richTextBox1, 0, 0);
-        tableLayoutPanel4.Controls.Add(tableLayoutPanel6, 1, 0);
+        tableLayoutPanel4.Controls.Add(tbl_Control, 1, 0);
         tableLayoutPanel4.Controls.Add(tableLayoutPanel7, 2, 0);
         tableLayoutPanel4.Dock = DockStyle.Fill;
         tableLayoutPanel4.Location = new Point(4, 407);
@@ -331,7 +391,6 @@ partial class UC_Interface
         // richTextBox1
         // 
         richTextBox1.Dock = DockStyle.Fill;
-        richTextBox1.Enabled = false;
         richTextBox1.Font = new Font("Century Gothic", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
         richTextBox1.Location = new Point(3, 3);
         richTextBox1.Name = "richTextBox1";
@@ -339,6 +398,648 @@ partial class UC_Interface
         richTextBox1.Size = new Size(384, 390);
         richTextBox1.TabIndex = 0;
         richTextBox1.Text = resources.GetString("richTextBox1.Text");
+        // 
+        // tbl_Control
+        // 
+        tbl_Control.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
+        tbl_Control.ColumnCount = 9;
+        tbl_Control.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 11.1111107F));
+        tbl_Control.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 11.1111107F));
+        tbl_Control.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 11.1111107F));
+        tbl_Control.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 11.1111107F));
+        tbl_Control.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 11.1111107F));
+        tbl_Control.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 11.1111107F));
+        tbl_Control.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 11.1111107F));
+        tbl_Control.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 11.1111107F));
+        tbl_Control.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 11.1111107F));
+        tbl_Control.Controls.Add(label15, 0, 4);
+        tbl_Control.Controls.Add(label13, 8, 3);
+        tbl_Control.Controls.Add(label11, 8, 2);
+        tbl_Control.Controls.Add(label9, 8, 1);
+        tbl_Control.Controls.Add(label7, 8, 0);
+        tbl_Control.Controls.Add(lbl_ADC4, 5, 3);
+        tbl_Control.Controls.Add(label31, 4, 3);
+        tbl_Control.Controls.Add(lbl_ADA4, 3, 3);
+        tbl_Control.Controls.Add(label29, 2, 3);
+        tbl_Control.Controls.Add(lbl_ADV4, 1, 3);
+        tbl_Control.Controls.Add(label27, 0, 3);
+        tbl_Control.Controls.Add(lbl_ADC3, 5, 2);
+        tbl_Control.Controls.Add(label23, 4, 2);
+        tbl_Control.Controls.Add(lbl_ADA3, 3, 2);
+        tbl_Control.Controls.Add(label21, 2, 2);
+        tbl_Control.Controls.Add(lbl_ADV3, 1, 2);
+        tbl_Control.Controls.Add(label19, 0, 2);
+        tbl_Control.Controls.Add(lbl_ADC2, 5, 1);
+        tbl_Control.Controls.Add(label17, 4, 1);
+        tbl_Control.Controls.Add(lbl_ADA2, 3, 1);
+        tbl_Control.Controls.Add(label14, 2, 1);
+        tbl_Control.Controls.Add(lbl_ADV2, 1, 1);
+        tbl_Control.Controls.Add(label12, 0, 1);
+        tbl_Control.Controls.Add(lbl_ADC1, 5, 0);
+        tbl_Control.Controls.Add(label10, 4, 0);
+        tbl_Control.Controls.Add(lbl_ADA1, 3, 0);
+        tbl_Control.Controls.Add(label8, 2, 0);
+        tbl_Control.Controls.Add(lbl_ADV1, 1, 0);
+        tbl_Control.Controls.Add(label6, 0, 0);
+        tbl_Control.Controls.Add(label33, 4, 4);
+        tbl_Control.Controls.Add(label34, 4, 5);
+        tbl_Control.Controls.Add(label35, 4, 6);
+        tbl_Control.Controls.Add(label36, 4, 7);
+        tbl_Control.Controls.Add(lbl_ADC5, 5, 4);
+        tbl_Control.Controls.Add(lbl_ADC6, 5, 5);
+        tbl_Control.Controls.Add(lbl_ADC7, 5, 6);
+        tbl_Control.Controls.Add(lbl_ADC8, 5, 7);
+        tbl_Control.Controls.Add(btn_SetFlow1, 6, 0);
+        tbl_Control.Controls.Add(btn_SetFlow2, 6, 1);
+        tbl_Control.Controls.Add(btn_SetFlow3, 6, 2);
+        tbl_Control.Controls.Add(btn_SetFlow4, 6, 3);
+        tbl_Control.Controls.Add(numFlow1, 7, 0);
+        tbl_Control.Controls.Add(numFlow2, 7, 1);
+        tbl_Control.Controls.Add(numFlow3, 7, 2);
+        tbl_Control.Controls.Add(numFlow4, 7, 3);
+        tbl_Control.Controls.Add(label18, 0, 5);
+        tbl_Control.Controls.Add(label20, 0, 6);
+        tbl_Control.Controls.Add(label22, 2, 4);
+        tbl_Control.Controls.Add(label24, 2, 5);
+        tbl_Control.Controls.Add(label28, 2, 6);
+        tbl_Control.Dock = DockStyle.Fill;
+        tbl_Control.Location = new Point(393, 3);
+        tbl_Control.Name = "tbl_Control";
+        tbl_Control.RowCount = 10;
+        tbl_Control.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
+        tbl_Control.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
+        tbl_Control.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
+        tbl_Control.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
+        tbl_Control.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
+        tbl_Control.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
+        tbl_Control.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
+        tbl_Control.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
+        tbl_Control.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
+        tbl_Control.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
+        tbl_Control.Size = new Size(950, 390);
+        tbl_Control.TabIndex = 2;
+        // 
+        // label15
+        // 
+        label15.AutoSize = true;
+        label15.Dock = DockStyle.Fill;
+        label15.Location = new Point(4, 153);
+        label15.Name = "label15";
+        label15.Size = new Size(98, 37);
+        label15.TabIndex = 71;
+        label15.Text = "Pump 1:";
+        label15.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // label13
+        // 
+        label13.AutoSize = true;
+        label13.Dock = DockStyle.Fill;
+        label13.Location = new Point(844, 115);
+        label13.Name = "label13";
+        label13.Size = new Size(102, 37);
+        label13.TabIndex = 70;
+        label13.Text = "LPM";
+        label13.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // label11
+        // 
+        label11.AutoSize = true;
+        label11.Dock = DockStyle.Fill;
+        label11.Location = new Point(844, 77);
+        label11.Name = "label11";
+        label11.Size = new Size(102, 37);
+        label11.TabIndex = 69;
+        label11.Text = "LPM";
+        label11.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // label9
+        // 
+        label9.AutoSize = true;
+        label9.Dock = DockStyle.Fill;
+        label9.Location = new Point(844, 39);
+        label9.Name = "label9";
+        label9.Size = new Size(102, 37);
+        label9.TabIndex = 68;
+        label9.Text = "LPM";
+        label9.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // label7
+        // 
+        label7.AutoSize = true;
+        label7.Dock = DockStyle.Fill;
+        label7.Location = new Point(844, 1);
+        label7.Name = "label7";
+        label7.Size = new Size(102, 37);
+        label7.TabIndex = 67;
+        label7.Text = "LPM";
+        label7.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // lbl_ADC4
+        // 
+        lbl_ADC4.AutoSize = true;
+        lbl_ADC4.BackColor = SystemColors.ControlLightLight;
+        lbl_ADC4.Dock = DockStyle.Fill;
+        lbl_ADC4.Location = new Point(529, 115);
+        lbl_ADC4.Name = "lbl_ADC4";
+        lbl_ADC4.Size = new Size(98, 37);
+        lbl_ADC4.TabIndex = 54;
+        lbl_ADC4.Text = "0";
+        lbl_ADC4.TextAlign = ContentAlignment.MiddleCenter;
+        // 
+        // label31
+        // 
+        label31.AutoSize = true;
+        label31.Dock = DockStyle.Fill;
+        label31.Location = new Point(424, 115);
+        label31.Name = "label31";
+        label31.Size = new Size(98, 37);
+        label31.TabIndex = 53;
+        label31.Text = "ADC 4:";
+        label31.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // lbl_ADA4
+        // 
+        lbl_ADA4.AutoSize = true;
+        lbl_ADA4.BackColor = SystemColors.ControlLightLight;
+        lbl_ADA4.Dock = DockStyle.Fill;
+        lbl_ADA4.Location = new Point(319, 115);
+        lbl_ADA4.Name = "lbl_ADA4";
+        lbl_ADA4.Size = new Size(98, 37);
+        lbl_ADA4.TabIndex = 52;
+        lbl_ADA4.Text = "0";
+        lbl_ADA4.TextAlign = ContentAlignment.MiddleCenter;
+        // 
+        // label29
+        // 
+        label29.AutoSize = true;
+        label29.Dock = DockStyle.Fill;
+        label29.Location = new Point(214, 115);
+        label29.Name = "label29";
+        label29.Size = new Size(98, 37);
+        label29.TabIndex = 51;
+        label29.Text = "ADA 4:";
+        label29.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // lbl_ADV4
+        // 
+        lbl_ADV4.AutoSize = true;
+        lbl_ADV4.BackColor = SystemColors.ControlLightLight;
+        lbl_ADV4.Dock = DockStyle.Fill;
+        lbl_ADV4.Location = new Point(109, 115);
+        lbl_ADV4.Name = "lbl_ADV4";
+        lbl_ADV4.Size = new Size(98, 37);
+        lbl_ADV4.TabIndex = 50;
+        lbl_ADV4.Text = "0";
+        lbl_ADV4.TextAlign = ContentAlignment.MiddleCenter;
+        // 
+        // label27
+        // 
+        label27.AutoSize = true;
+        label27.Dock = DockStyle.Fill;
+        label27.Location = new Point(4, 115);
+        label27.Name = "label27";
+        label27.Size = new Size(98, 37);
+        label27.TabIndex = 49;
+        label27.Text = "ADV 4:";
+        label27.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // lbl_ADC3
+        // 
+        lbl_ADC3.AutoSize = true;
+        lbl_ADC3.BackColor = SystemColors.ControlLightLight;
+        lbl_ADC3.Dock = DockStyle.Fill;
+        lbl_ADC3.Location = new Point(529, 77);
+        lbl_ADC3.Name = "lbl_ADC3";
+        lbl_ADC3.Size = new Size(98, 37);
+        lbl_ADC3.TabIndex = 48;
+        lbl_ADC3.Text = "0";
+        lbl_ADC3.TextAlign = ContentAlignment.MiddleCenter;
+        // 
+        // label23
+        // 
+        label23.AutoSize = true;
+        label23.Dock = DockStyle.Fill;
+        label23.Location = new Point(424, 77);
+        label23.Name = "label23";
+        label23.Size = new Size(98, 37);
+        label23.TabIndex = 47;
+        label23.Text = "ADC 3:";
+        label23.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // lbl_ADA3
+        // 
+        lbl_ADA3.AutoSize = true;
+        lbl_ADA3.BackColor = SystemColors.ControlLightLight;
+        lbl_ADA3.Dock = DockStyle.Fill;
+        lbl_ADA3.Location = new Point(319, 77);
+        lbl_ADA3.Name = "lbl_ADA3";
+        lbl_ADA3.Size = new Size(98, 37);
+        lbl_ADA3.TabIndex = 46;
+        lbl_ADA3.Text = "0";
+        lbl_ADA3.TextAlign = ContentAlignment.MiddleCenter;
+        // 
+        // label21
+        // 
+        label21.AutoSize = true;
+        label21.Dock = DockStyle.Fill;
+        label21.Location = new Point(214, 77);
+        label21.Name = "label21";
+        label21.Size = new Size(98, 37);
+        label21.TabIndex = 45;
+        label21.Text = "ADA 3:";
+        label21.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // lbl_ADV3
+        // 
+        lbl_ADV3.AutoSize = true;
+        lbl_ADV3.BackColor = SystemColors.ControlLightLight;
+        lbl_ADV3.Dock = DockStyle.Fill;
+        lbl_ADV3.Location = new Point(109, 77);
+        lbl_ADV3.Name = "lbl_ADV3";
+        lbl_ADV3.Size = new Size(98, 37);
+        lbl_ADV3.TabIndex = 44;
+        lbl_ADV3.Text = "0";
+        lbl_ADV3.TextAlign = ContentAlignment.MiddleCenter;
+        // 
+        // label19
+        // 
+        label19.AutoSize = true;
+        label19.Dock = DockStyle.Fill;
+        label19.Location = new Point(4, 77);
+        label19.Name = "label19";
+        label19.Size = new Size(98, 37);
+        label19.TabIndex = 43;
+        label19.Text = "ADV 3:";
+        label19.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // lbl_ADC2
+        // 
+        lbl_ADC2.AutoSize = true;
+        lbl_ADC2.BackColor = SystemColors.ControlLightLight;
+        lbl_ADC2.Dock = DockStyle.Fill;
+        lbl_ADC2.Location = new Point(529, 39);
+        lbl_ADC2.Name = "lbl_ADC2";
+        lbl_ADC2.Size = new Size(98, 37);
+        lbl_ADC2.TabIndex = 42;
+        lbl_ADC2.Text = "0";
+        lbl_ADC2.TextAlign = ContentAlignment.MiddleCenter;
+        // 
+        // label17
+        // 
+        label17.AutoSize = true;
+        label17.Dock = DockStyle.Fill;
+        label17.Location = new Point(424, 39);
+        label17.Name = "label17";
+        label17.Size = new Size(98, 37);
+        label17.TabIndex = 41;
+        label17.Text = "ADC 2:";
+        label17.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // lbl_ADA2
+        // 
+        lbl_ADA2.AutoSize = true;
+        lbl_ADA2.BackColor = SystemColors.ControlLightLight;
+        lbl_ADA2.Dock = DockStyle.Fill;
+        lbl_ADA2.Location = new Point(319, 39);
+        lbl_ADA2.Name = "lbl_ADA2";
+        lbl_ADA2.Size = new Size(98, 37);
+        lbl_ADA2.TabIndex = 40;
+        lbl_ADA2.Text = "0";
+        lbl_ADA2.TextAlign = ContentAlignment.MiddleCenter;
+        // 
+        // label14
+        // 
+        label14.AutoSize = true;
+        label14.Dock = DockStyle.Fill;
+        label14.Location = new Point(214, 39);
+        label14.Name = "label14";
+        label14.Size = new Size(98, 37);
+        label14.TabIndex = 39;
+        label14.Text = "ADA 2:";
+        label14.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // lbl_ADV2
+        // 
+        lbl_ADV2.AutoSize = true;
+        lbl_ADV2.BackColor = SystemColors.ControlLightLight;
+        lbl_ADV2.Dock = DockStyle.Fill;
+        lbl_ADV2.Location = new Point(109, 39);
+        lbl_ADV2.Name = "lbl_ADV2";
+        lbl_ADV2.Size = new Size(98, 37);
+        lbl_ADV2.TabIndex = 38;
+        lbl_ADV2.Text = "0";
+        lbl_ADV2.TextAlign = ContentAlignment.MiddleCenter;
+        // 
+        // label12
+        // 
+        label12.AutoSize = true;
+        label12.Dock = DockStyle.Fill;
+        label12.Location = new Point(4, 39);
+        label12.Name = "label12";
+        label12.Size = new Size(98, 37);
+        label12.TabIndex = 37;
+        label12.Text = "ADV 2:";
+        label12.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // lbl_ADC1
+        // 
+        lbl_ADC1.AutoSize = true;
+        lbl_ADC1.BackColor = SystemColors.ControlLightLight;
+        lbl_ADC1.Dock = DockStyle.Fill;
+        lbl_ADC1.Location = new Point(529, 1);
+        lbl_ADC1.Name = "lbl_ADC1";
+        lbl_ADC1.Size = new Size(98, 37);
+        lbl_ADC1.TabIndex = 36;
+        lbl_ADC1.Text = "0";
+        lbl_ADC1.TextAlign = ContentAlignment.MiddleCenter;
+        // 
+        // label10
+        // 
+        label10.AutoSize = true;
+        label10.Dock = DockStyle.Fill;
+        label10.Location = new Point(424, 1);
+        label10.Name = "label10";
+        label10.Size = new Size(98, 37);
+        label10.TabIndex = 35;
+        label10.Text = "ADC 1:";
+        label10.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // lbl_ADA1
+        // 
+        lbl_ADA1.AutoSize = true;
+        lbl_ADA1.BackColor = SystemColors.ControlLightLight;
+        lbl_ADA1.Dock = DockStyle.Fill;
+        lbl_ADA1.Location = new Point(319, 1);
+        lbl_ADA1.Name = "lbl_ADA1";
+        lbl_ADA1.Size = new Size(98, 37);
+        lbl_ADA1.TabIndex = 34;
+        lbl_ADA1.Text = "0";
+        lbl_ADA1.TextAlign = ContentAlignment.MiddleCenter;
+        // 
+        // label8
+        // 
+        label8.AutoSize = true;
+        label8.Dock = DockStyle.Fill;
+        label8.Location = new Point(214, 1);
+        label8.Name = "label8";
+        label8.Size = new Size(98, 37);
+        label8.TabIndex = 33;
+        label8.Text = "ADA 1:";
+        label8.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // lbl_ADV1
+        // 
+        lbl_ADV1.AutoSize = true;
+        lbl_ADV1.BackColor = SystemColors.ControlLightLight;
+        lbl_ADV1.Dock = DockStyle.Fill;
+        lbl_ADV1.Location = new Point(109, 1);
+        lbl_ADV1.Name = "lbl_ADV1";
+        lbl_ADV1.Size = new Size(98, 37);
+        lbl_ADV1.TabIndex = 32;
+        lbl_ADV1.Text = "0";
+        lbl_ADV1.TextAlign = ContentAlignment.MiddleCenter;
+        // 
+        // label6
+        // 
+        label6.AutoSize = true;
+        label6.Dock = DockStyle.Fill;
+        label6.Location = new Point(4, 1);
+        label6.Name = "label6";
+        label6.Size = new Size(98, 37);
+        label6.TabIndex = 31;
+        label6.Text = "ADV 1:";
+        label6.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // label33
+        // 
+        label33.AutoSize = true;
+        label33.Dock = DockStyle.Fill;
+        label33.Location = new Point(424, 153);
+        label33.Name = "label33";
+        label33.Size = new Size(98, 37);
+        label33.TabIndex = 55;
+        label33.Text = "ADC 5:";
+        label33.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // label34
+        // 
+        label34.AutoSize = true;
+        label34.Dock = DockStyle.Fill;
+        label34.Location = new Point(424, 191);
+        label34.Name = "label34";
+        label34.Size = new Size(98, 37);
+        label34.TabIndex = 56;
+        label34.Text = "ADC 6:";
+        label34.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // label35
+        // 
+        label35.AutoSize = true;
+        label35.Dock = DockStyle.Fill;
+        label35.Location = new Point(424, 229);
+        label35.Name = "label35";
+        label35.Size = new Size(98, 37);
+        label35.TabIndex = 57;
+        label35.Text = "ADC 7:";
+        label35.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // label36
+        // 
+        label36.AutoSize = true;
+        label36.Dock = DockStyle.Fill;
+        label36.Location = new Point(424, 267);
+        label36.Name = "label36";
+        label36.Size = new Size(98, 37);
+        label36.TabIndex = 58;
+        label36.Text = "ADC 8:";
+        label36.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // lbl_ADC5
+        // 
+        lbl_ADC5.AutoSize = true;
+        lbl_ADC5.BackColor = SystemColors.ControlLightLight;
+        lbl_ADC5.Dock = DockStyle.Fill;
+        lbl_ADC5.Location = new Point(529, 153);
+        lbl_ADC5.Name = "lbl_ADC5";
+        lbl_ADC5.Size = new Size(98, 37);
+        lbl_ADC5.TabIndex = 55;
+        lbl_ADC5.Text = "0";
+        lbl_ADC5.TextAlign = ContentAlignment.MiddleCenter;
+        // 
+        // lbl_ADC6
+        // 
+        lbl_ADC6.AutoSize = true;
+        lbl_ADC6.BackColor = SystemColors.ControlLightLight;
+        lbl_ADC6.Dock = DockStyle.Fill;
+        lbl_ADC6.Location = new Point(529, 191);
+        lbl_ADC6.Name = "lbl_ADC6";
+        lbl_ADC6.Size = new Size(98, 37);
+        lbl_ADC6.TabIndex = 55;
+        lbl_ADC6.Text = "0";
+        lbl_ADC6.TextAlign = ContentAlignment.MiddleCenter;
+        // 
+        // lbl_ADC7
+        // 
+        lbl_ADC7.AutoSize = true;
+        lbl_ADC7.BackColor = SystemColors.ControlLightLight;
+        lbl_ADC7.Dock = DockStyle.Fill;
+        lbl_ADC7.Location = new Point(529, 229);
+        lbl_ADC7.Name = "lbl_ADC7";
+        lbl_ADC7.Size = new Size(98, 37);
+        lbl_ADC7.TabIndex = 55;
+        lbl_ADC7.Text = "0";
+        lbl_ADC7.TextAlign = ContentAlignment.MiddleCenter;
+        // 
+        // lbl_ADC8
+        // 
+        lbl_ADC8.AutoSize = true;
+        lbl_ADC8.BackColor = SystemColors.ControlLightLight;
+        lbl_ADC8.Dock = DockStyle.Fill;
+        lbl_ADC8.Location = new Point(529, 267);
+        lbl_ADC8.Name = "lbl_ADC8";
+        lbl_ADC8.Size = new Size(98, 37);
+        lbl_ADC8.TabIndex = 55;
+        lbl_ADC8.Text = "0";
+        lbl_ADC8.TextAlign = ContentAlignment.MiddleCenter;
+        // 
+        // btn_SetFlow1
+        // 
+        btn_SetFlow1.Dock = DockStyle.Fill;
+        btn_SetFlow1.Location = new Point(634, 4);
+        btn_SetFlow1.Name = "btn_SetFlow1";
+        btn_SetFlow1.Size = new Size(98, 31);
+        btn_SetFlow1.TabIndex = 59;
+        btn_SetFlow1.Text = "Set Flow 1:";
+        btn_SetFlow1.UseVisualStyleBackColor = true;
+        btn_SetFlow1.Click += btn_SetFlow1_Click;
+        // 
+        // btn_SetFlow2
+        // 
+        btn_SetFlow2.Dock = DockStyle.Fill;
+        btn_SetFlow2.Location = new Point(634, 42);
+        btn_SetFlow2.Name = "btn_SetFlow2";
+        btn_SetFlow2.Size = new Size(98, 31);
+        btn_SetFlow2.TabIndex = 60;
+        btn_SetFlow2.Text = "Set Flow 2:";
+        btn_SetFlow2.UseVisualStyleBackColor = true;
+        btn_SetFlow2.Click += btn_SetFlow2_Click;
+        // 
+        // btn_SetFlow3
+        // 
+        btn_SetFlow3.Dock = DockStyle.Fill;
+        btn_SetFlow3.Location = new Point(634, 80);
+        btn_SetFlow3.Name = "btn_SetFlow3";
+        btn_SetFlow3.Size = new Size(98, 31);
+        btn_SetFlow3.TabIndex = 61;
+        btn_SetFlow3.Text = "Set Flow 3:";
+        btn_SetFlow3.UseVisualStyleBackColor = true;
+        btn_SetFlow3.Click += btn_SetFlow3_Click;
+        // 
+        // btn_SetFlow4
+        // 
+        btn_SetFlow4.Dock = DockStyle.Fill;
+        btn_SetFlow4.Location = new Point(634, 118);
+        btn_SetFlow4.Name = "btn_SetFlow4";
+        btn_SetFlow4.Size = new Size(98, 31);
+        btn_SetFlow4.TabIndex = 62;
+        btn_SetFlow4.Text = "Set Flow 4:";
+        btn_SetFlow4.UseVisualStyleBackColor = true;
+        btn_SetFlow4.Click += btn_SetFlow4_Click;
+        // 
+        // numFlow1
+        // 
+        numFlow1.DecimalPlaces = 2;
+        numFlow1.Increment = new decimal(new int[] { 1, 0, 0, 65536 });
+        numFlow1.Location = new Point(739, 4);
+        numFlow1.Maximum = new decimal(new int[] { 20, 0, 0, 0 });
+        numFlow1.Name = "numFlow1";
+        numFlow1.Size = new Size(98, 23);
+        numFlow1.TabIndex = 63;
+        // 
+        // numFlow2
+        // 
+        numFlow2.DecimalPlaces = 2;
+        numFlow2.Increment = new decimal(new int[] { 1, 0, 0, 65536 });
+        numFlow2.Location = new Point(739, 42);
+        numFlow2.Maximum = new decimal(new int[] { 20, 0, 0, 0 });
+        numFlow2.Name = "numFlow2";
+        numFlow2.Size = new Size(98, 23);
+        numFlow2.TabIndex = 64;
+        // 
+        // numFlow3
+        // 
+        numFlow3.DecimalPlaces = 2;
+        numFlow3.Increment = new decimal(new int[] { 1, 0, 0, 65536 });
+        numFlow3.Location = new Point(739, 80);
+        numFlow3.Maximum = new decimal(new int[] { 20, 0, 0, 0 });
+        numFlow3.Name = "numFlow3";
+        numFlow3.Size = new Size(98, 23);
+        numFlow3.TabIndex = 65;
+        // 
+        // numFlow4
+        // 
+        numFlow4.DecimalPlaces = 2;
+        numFlow4.Increment = new decimal(new int[] { 1, 0, 0, 65536 });
+        numFlow4.Location = new Point(739, 118);
+        numFlow4.Maximum = new decimal(new int[] { 20, 0, 0, 0 });
+        numFlow4.Name = "numFlow4";
+        numFlow4.Size = new Size(98, 23);
+        numFlow4.TabIndex = 66;
+        // 
+        // label18
+        // 
+        label18.AutoSize = true;
+        label18.Dock = DockStyle.Fill;
+        label18.Location = new Point(4, 191);
+        label18.Name = "label18";
+        label18.Size = new Size(98, 37);
+        label18.TabIndex = 72;
+        label18.Text = "Pump 2:";
+        label18.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // label20
+        // 
+        label20.AutoSize = true;
+        label20.Dock = DockStyle.Fill;
+        label20.Location = new Point(4, 229);
+        label20.Name = "label20";
+        label20.Size = new Size(98, 37);
+        label20.TabIndex = 73;
+        label20.Text = "Pump 3:";
+        label20.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // label22
+        // 
+        label22.AutoSize = true;
+        label22.Dock = DockStyle.Fill;
+        label22.Location = new Point(214, 153);
+        label22.Name = "label22";
+        label22.Size = new Size(98, 37);
+        label22.TabIndex = 74;
+        label22.Text = "3Way 1:";
+        label22.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // label24
+        // 
+        label24.AutoSize = true;
+        label24.Dock = DockStyle.Fill;
+        label24.Location = new Point(214, 191);
+        label24.Name = "label24";
+        label24.Size = new Size(98, 37);
+        label24.TabIndex = 75;
+        label24.Text = "3Way 2:";
+        label24.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // label28
+        // 
+        label28.AutoSize = true;
+        label28.Dock = DockStyle.Fill;
+        label28.Location = new Point(214, 229);
+        label28.Name = "label28";
+        label28.Size = new Size(98, 37);
+        label28.TabIndex = 76;
+        label28.Text = "3Way 3:";
+        label28.TextAlign = ContentAlignment.MiddleLeft;
         // 
         // tableLayoutPanel7
         // 
@@ -348,12 +1049,12 @@ partial class UC_Interface
         tableLayoutPanel7.Controls.Add(tbl_RelayControl, 0, 1);
         tableLayoutPanel7.Controls.Add(tableLayoutPanel8, 0, 0);
         tableLayoutPanel7.Dock = DockStyle.Fill;
-        tableLayoutPanel7.Location = new Point(1443, 3);
+        tableLayoutPanel7.Location = new Point(1349, 3);
         tableLayoutPanel7.Name = "tableLayoutPanel7";
         tableLayoutPanel7.RowCount = 2;
         tableLayoutPanel7.RowStyles.Add(new RowStyle(SizeType.Percent, 9.923664F));
         tableLayoutPanel7.RowStyles.Add(new RowStyle(SizeType.Percent, 90.07633F));
-        tableLayoutPanel7.Size = new Size(416, 390);
+        tableLayoutPanel7.Size = new Size(510, 390);
         tableLayoutPanel7.TabIndex = 3;
         // 
         // tbl_RelayControl
@@ -367,7 +1068,7 @@ partial class UC_Interface
         tbl_RelayControl.RowCount = 1;
         tbl_RelayControl.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
         tbl_RelayControl.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-        tbl_RelayControl.Size = new Size(410, 346);
+        tbl_RelayControl.Size = new Size(504, 346);
         tbl_RelayControl.TabIndex = 0;
         // 
         // tableLayoutPanel8
@@ -383,7 +1084,7 @@ partial class UC_Interface
         tableLayoutPanel8.RowCount = 1;
         tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
         tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-        tableLayoutPanel8.Size = new Size(410, 32);
+        tableLayoutPanel8.Size = new Size(504, 32);
         tableLayoutPanel8.TabIndex = 1;
         // 
         // label16
@@ -392,7 +1093,7 @@ partial class UC_Interface
         label16.Dock = DockStyle.Fill;
         label16.Location = new Point(3, 0);
         label16.Name = "label16";
-        label16.Size = new Size(199, 32);
+        label16.Size = new Size(246, 32);
         label16.TabIndex = 0;
         label16.Text = "Relay Control Table";
         label16.TextAlign = ContentAlignment.MiddleCenter;
@@ -400,478 +1101,13 @@ partial class UC_Interface
         // btn_GetAllRelay
         // 
         btn_GetAllRelay.Dock = DockStyle.Fill;
-        btn_GetAllRelay.Location = new Point(208, 3);
+        btn_GetAllRelay.Location = new Point(255, 3);
         btn_GetAllRelay.Name = "btn_GetAllRelay";
-        btn_GetAllRelay.Size = new Size(199, 26);
+        btn_GetAllRelay.Size = new Size(246, 26);
         btn_GetAllRelay.TabIndex = 1;
         btn_GetAllRelay.Text = "Get Relay Status";
         btn_GetAllRelay.UseVisualStyleBackColor = true;
         btn_GetAllRelay.Click += btn_GetAllRelay_Click;
-        // 
-        // btn_ChangeMode
-        // 
-        btn_ChangeMode.Dock = DockStyle.Fill;
-        btn_ChangeMode.Location = new Point(177, 346);
-        btn_ChangeMode.Name = "btn_ChangeMode";
-        btn_ChangeMode.Size = new Size(166, 40);
-        btn_ChangeMode.TabIndex = 30;
-        btn_ChangeMode.Text = "Manual";
-        btn_ChangeMode.UseVisualStyleBackColor = true;
-        btn_ChangeMode.Click += btn_ChangeMode_Click;
-        // 
-        // label26
-        // 
-        label26.AutoSize = true;
-        label26.BackColor = SystemColors.ControlLightLight;
-        label26.BorderStyle = BorderStyle.FixedSingle;
-        label26.Dock = DockStyle.Fill;
-        label26.Location = new Point(177, 305);
-        label26.Name = "label26";
-        label26.Size = new Size(166, 37);
-        label26.TabIndex = 17;
-        label26.Text = "Idle";
-        label26.TextAlign = ContentAlignment.MiddleCenter;
-        // 
-        // label25
-        // 
-        label25.AutoSize = true;
-        label25.Dock = DockStyle.Fill;
-        label25.Location = new Point(4, 305);
-        label25.Name = "label25";
-        label25.Size = new Size(166, 37);
-        label25.TabIndex = 16;
-        label25.Text = "Stage:";
-        label25.TextAlign = ContentAlignment.MiddleLeft;
-        // 
-        // tableLayoutPanel6
-        // 
-        tableLayoutPanel6.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
-        tableLayoutPanel6.ColumnCount = 6;
-        tableLayoutPanel6.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
-        tableLayoutPanel6.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
-        tableLayoutPanel6.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
-        tableLayoutPanel6.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
-        tableLayoutPanel6.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
-        tableLayoutPanel6.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
-        tableLayoutPanel6.Controls.Add(lbl_ADC4, 5, 3);
-        tableLayoutPanel6.Controls.Add(label31, 4, 3);
-        tableLayoutPanel6.Controls.Add(lbl_ADA4, 3, 3);
-        tableLayoutPanel6.Controls.Add(label29, 2, 3);
-        tableLayoutPanel6.Controls.Add(lbl_ADV4, 1, 3);
-        tableLayoutPanel6.Controls.Add(label27, 0, 3);
-        tableLayoutPanel6.Controls.Add(lbl_ADC3, 5, 2);
-        tableLayoutPanel6.Controls.Add(label23, 4, 2);
-        tableLayoutPanel6.Controls.Add(lbl_ADA3, 3, 2);
-        tableLayoutPanel6.Controls.Add(label21, 2, 2);
-        tableLayoutPanel6.Controls.Add(lbl_ADV3, 1, 2);
-        tableLayoutPanel6.Controls.Add(label19, 0, 2);
-        tableLayoutPanel6.Controls.Add(lbl_ADC2, 5, 1);
-        tableLayoutPanel6.Controls.Add(label17, 4, 1);
-        tableLayoutPanel6.Controls.Add(lbl_ADA2, 3, 1);
-        tableLayoutPanel6.Controls.Add(label14, 2, 1);
-        tableLayoutPanel6.Controls.Add(lbl_ADV2, 1, 1);
-        tableLayoutPanel6.Controls.Add(label12, 0, 1);
-        tableLayoutPanel6.Controls.Add(lbl_ADC1, 5, 0);
-        tableLayoutPanel6.Controls.Add(label10, 4, 0);
-        tableLayoutPanel6.Controls.Add(lbl_ADA1, 3, 0);
-        tableLayoutPanel6.Controls.Add(label8, 2, 0);
-        tableLayoutPanel6.Controls.Add(lbl_ADV1, 1, 0);
-        tableLayoutPanel6.Controls.Add(label25, 0, 8);
-        tableLayoutPanel6.Controls.Add(label26, 1, 8);
-        tableLayoutPanel6.Controls.Add(btn_ChangeMode, 1, 9);
-        tableLayoutPanel6.Controls.Add(label6, 0, 0);
-        tableLayoutPanel6.Controls.Add(label33, 4, 4);
-        tableLayoutPanel6.Controls.Add(label34, 4, 5);
-        tableLayoutPanel6.Controls.Add(label35, 4, 6);
-        tableLayoutPanel6.Controls.Add(label36, 4, 7);
-        tableLayoutPanel6.Controls.Add(lbl_ADC5, 5, 4);
-        tableLayoutPanel6.Controls.Add(lbl_ADC6, 5, 5);
-        tableLayoutPanel6.Controls.Add(lbl_ADC7, 5, 6);
-        tableLayoutPanel6.Controls.Add(lbl_ADC8, 5, 7);
-        tableLayoutPanel6.Dock = DockStyle.Fill;
-        tableLayoutPanel6.Location = new Point(393, 3);
-        tableLayoutPanel6.Name = "tableLayoutPanel6";
-        tableLayoutPanel6.RowCount = 10;
-        tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
-        tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
-        tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
-        tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
-        tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
-        tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
-        tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
-        tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
-        tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
-        tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 10F));
-        tableLayoutPanel6.Size = new Size(1044, 390);
-        tableLayoutPanel6.TabIndex = 2;
-        // 
-        // label6
-        // 
-        label6.AutoSize = true;
-        label6.Dock = DockStyle.Fill;
-        label6.Location = new Point(4, 1);
-        label6.Name = "label6";
-        label6.Size = new Size(166, 37);
-        label6.TabIndex = 31;
-        label6.Text = "ADV 1:";
-        label6.TextAlign = ContentAlignment.MiddleLeft;
-        // 
-        // lbl_ADV1
-        // 
-        lbl_ADV1.AutoSize = true;
-        lbl_ADV1.BackColor = SystemColors.ControlLightLight;
-        lbl_ADV1.Dock = DockStyle.Fill;
-        lbl_ADV1.Location = new Point(177, 1);
-        lbl_ADV1.Name = "lbl_ADV1";
-        lbl_ADV1.Size = new Size(166, 37);
-        lbl_ADV1.TabIndex = 32;
-        lbl_ADV1.Text = "0";
-        lbl_ADV1.TextAlign = ContentAlignment.MiddleCenter;
-        // 
-        // label8
-        // 
-        label8.AutoSize = true;
-        label8.Dock = DockStyle.Fill;
-        label8.Location = new Point(350, 1);
-        label8.Name = "label8";
-        label8.Size = new Size(166, 37);
-        label8.TabIndex = 33;
-        label8.Text = "ADA 1:";
-        label8.TextAlign = ContentAlignment.MiddleLeft;
-        // 
-        // lbl_ADA1
-        // 
-        lbl_ADA1.AutoSize = true;
-        lbl_ADA1.BackColor = SystemColors.ControlLightLight;
-        lbl_ADA1.Dock = DockStyle.Fill;
-        lbl_ADA1.Location = new Point(523, 1);
-        lbl_ADA1.Name = "lbl_ADA1";
-        lbl_ADA1.Size = new Size(166, 37);
-        lbl_ADA1.TabIndex = 34;
-        lbl_ADA1.Text = "0";
-        lbl_ADA1.TextAlign = ContentAlignment.MiddleCenter;
-        // 
-        // label10
-        // 
-        label10.AutoSize = true;
-        label10.Dock = DockStyle.Fill;
-        label10.Location = new Point(696, 1);
-        label10.Name = "label10";
-        label10.Size = new Size(166, 37);
-        label10.TabIndex = 35;
-        label10.Text = "ADC 1:";
-        label10.TextAlign = ContentAlignment.MiddleLeft;
-        // 
-        // lbl_ADC1
-        // 
-        lbl_ADC1.AutoSize = true;
-        lbl_ADC1.BackColor = SystemColors.ControlLightLight;
-        lbl_ADC1.Dock = DockStyle.Fill;
-        lbl_ADC1.Location = new Point(869, 1);
-        lbl_ADC1.Name = "lbl_ADC1";
-        lbl_ADC1.Size = new Size(171, 37);
-        lbl_ADC1.TabIndex = 36;
-        lbl_ADC1.Text = "0";
-        lbl_ADC1.TextAlign = ContentAlignment.MiddleCenter;
-        // 
-        // label12
-        // 
-        label12.AutoSize = true;
-        label12.Dock = DockStyle.Fill;
-        label12.Location = new Point(4, 39);
-        label12.Name = "label12";
-        label12.Size = new Size(166, 37);
-        label12.TabIndex = 37;
-        label12.Text = "ADV 2:";
-        label12.TextAlign = ContentAlignment.MiddleLeft;
-        // 
-        // lbl_ADV2
-        // 
-        lbl_ADV2.AutoSize = true;
-        lbl_ADV2.BackColor = SystemColors.ControlLightLight;
-        lbl_ADV2.Dock = DockStyle.Fill;
-        lbl_ADV2.Location = new Point(177, 39);
-        lbl_ADV2.Name = "lbl_ADV2";
-        lbl_ADV2.Size = new Size(166, 37);
-        lbl_ADV2.TabIndex = 38;
-        lbl_ADV2.Text = "0";
-        lbl_ADV2.TextAlign = ContentAlignment.MiddleCenter;
-        // 
-        // label14
-        // 
-        label14.AutoSize = true;
-        label14.Dock = DockStyle.Fill;
-        label14.Location = new Point(350, 39);
-        label14.Name = "label14";
-        label14.Size = new Size(166, 37);
-        label14.TabIndex = 39;
-        label14.Text = "ADA 2:";
-        label14.TextAlign = ContentAlignment.MiddleLeft;
-        // 
-        // lbl_ADA2
-        // 
-        lbl_ADA2.AutoSize = true;
-        lbl_ADA2.BackColor = SystemColors.ControlLightLight;
-        lbl_ADA2.Dock = DockStyle.Fill;
-        lbl_ADA2.Location = new Point(523, 39);
-        lbl_ADA2.Name = "lbl_ADA2";
-        lbl_ADA2.Size = new Size(166, 37);
-        lbl_ADA2.TabIndex = 40;
-        lbl_ADA2.Text = "0";
-        lbl_ADA2.TextAlign = ContentAlignment.MiddleCenter;
-        // 
-        // label17
-        // 
-        label17.AutoSize = true;
-        label17.Dock = DockStyle.Fill;
-        label17.Location = new Point(696, 39);
-        label17.Name = "label17";
-        label17.Size = new Size(166, 37);
-        label17.TabIndex = 41;
-        label17.Text = "ADC 2:";
-        label17.TextAlign = ContentAlignment.MiddleLeft;
-        // 
-        // lbl_ADC2
-        // 
-        lbl_ADC2.AutoSize = true;
-        lbl_ADC2.BackColor = SystemColors.ControlLightLight;
-        lbl_ADC2.Dock = DockStyle.Fill;
-        lbl_ADC2.Location = new Point(869, 39);
-        lbl_ADC2.Name = "lbl_ADC2";
-        lbl_ADC2.Size = new Size(171, 37);
-        lbl_ADC2.TabIndex = 42;
-        lbl_ADC2.Text = "0";
-        lbl_ADC2.TextAlign = ContentAlignment.MiddleCenter;
-        // 
-        // label19
-        // 
-        label19.AutoSize = true;
-        label19.Dock = DockStyle.Fill;
-        label19.Location = new Point(4, 77);
-        label19.Name = "label19";
-        label19.Size = new Size(166, 37);
-        label19.TabIndex = 43;
-        label19.Text = "ADV 3:";
-        label19.TextAlign = ContentAlignment.MiddleLeft;
-        // 
-        // lbl_ADV3
-        // 
-        lbl_ADV3.AutoSize = true;
-        lbl_ADV3.BackColor = SystemColors.ControlLightLight;
-        lbl_ADV3.Dock = DockStyle.Fill;
-        lbl_ADV3.Location = new Point(177, 77);
-        lbl_ADV3.Name = "lbl_ADV3";
-        lbl_ADV3.Size = new Size(166, 37);
-        lbl_ADV3.TabIndex = 44;
-        lbl_ADV3.Text = "0";
-        lbl_ADV3.TextAlign = ContentAlignment.MiddleCenter;
-        // 
-        // label21
-        // 
-        label21.AutoSize = true;
-        label21.Dock = DockStyle.Fill;
-        label21.Location = new Point(350, 77);
-        label21.Name = "label21";
-        label21.Size = new Size(166, 37);
-        label21.TabIndex = 45;
-        label21.Text = "ADA 3:";
-        label21.TextAlign = ContentAlignment.MiddleLeft;
-        // 
-        // lbl_ADA3
-        // 
-        lbl_ADA3.AutoSize = true;
-        lbl_ADA3.BackColor = SystemColors.ControlLightLight;
-        lbl_ADA3.Dock = DockStyle.Fill;
-        lbl_ADA3.Location = new Point(523, 77);
-        lbl_ADA3.Name = "lbl_ADA3";
-        lbl_ADA3.Size = new Size(166, 37);
-        lbl_ADA3.TabIndex = 46;
-        lbl_ADA3.Text = "0";
-        lbl_ADA3.TextAlign = ContentAlignment.MiddleCenter;
-        // 
-        // label23
-        // 
-        label23.AutoSize = true;
-        label23.Dock = DockStyle.Fill;
-        label23.Location = new Point(696, 77);
-        label23.Name = "label23";
-        label23.Size = new Size(166, 37);
-        label23.TabIndex = 47;
-        label23.Text = "ADC 3:";
-        label23.TextAlign = ContentAlignment.MiddleLeft;
-        // 
-        // lbl_ADC3
-        // 
-        lbl_ADC3.AutoSize = true;
-        lbl_ADC3.BackColor = SystemColors.ControlLightLight;
-        lbl_ADC3.Dock = DockStyle.Fill;
-        lbl_ADC3.Location = new Point(869, 77);
-        lbl_ADC3.Name = "lbl_ADC3";
-        lbl_ADC3.Size = new Size(171, 37);
-        lbl_ADC3.TabIndex = 48;
-        lbl_ADC3.Text = "0";
-        lbl_ADC3.TextAlign = ContentAlignment.MiddleCenter;
-        // 
-        // label27
-        // 
-        label27.AutoSize = true;
-        label27.Dock = DockStyle.Fill;
-        label27.Location = new Point(4, 115);
-        label27.Name = "label27";
-        label27.Size = new Size(166, 37);
-        label27.TabIndex = 49;
-        label27.Text = "ADV 4:";
-        label27.TextAlign = ContentAlignment.MiddleLeft;
-        // 
-        // lbl_ADV4
-        // 
-        lbl_ADV4.AutoSize = true;
-        lbl_ADV4.BackColor = SystemColors.ControlLightLight;
-        lbl_ADV4.Dock = DockStyle.Fill;
-        lbl_ADV4.Location = new Point(177, 115);
-        lbl_ADV4.Name = "lbl_ADV4";
-        lbl_ADV4.Size = new Size(166, 37);
-        lbl_ADV4.TabIndex = 50;
-        lbl_ADV4.Text = "0";
-        lbl_ADV4.TextAlign = ContentAlignment.MiddleCenter;
-        // 
-        // label29
-        // 
-        label29.AutoSize = true;
-        label29.Dock = DockStyle.Fill;
-        label29.Location = new Point(350, 115);
-        label29.Name = "label29";
-        label29.Size = new Size(166, 37);
-        label29.TabIndex = 51;
-        label29.Text = "ADA 4:";
-        label29.TextAlign = ContentAlignment.MiddleLeft;
-        // 
-        // lbl_ADA4
-        // 
-        lbl_ADA4.AutoSize = true;
-        lbl_ADA4.BackColor = SystemColors.ControlLightLight;
-        lbl_ADA4.Dock = DockStyle.Fill;
-        lbl_ADA4.Location = new Point(523, 115);
-        lbl_ADA4.Name = "lbl_ADA4";
-        lbl_ADA4.Size = new Size(166, 37);
-        lbl_ADA4.TabIndex = 52;
-        lbl_ADA4.Text = "0";
-        lbl_ADA4.TextAlign = ContentAlignment.MiddleCenter;
-        // 
-        // label31
-        // 
-        label31.AutoSize = true;
-        label31.Dock = DockStyle.Fill;
-        label31.Location = new Point(696, 115);
-        label31.Name = "label31";
-        label31.Size = new Size(166, 37);
-        label31.TabIndex = 53;
-        label31.Text = "ADC 4:";
-        label31.TextAlign = ContentAlignment.MiddleLeft;
-        // 
-        // lbl_ADC4
-        // 
-        lbl_ADC4.AutoSize = true;
-        lbl_ADC4.BackColor = SystemColors.ControlLightLight;
-        lbl_ADC4.Dock = DockStyle.Fill;
-        lbl_ADC4.Location = new Point(869, 115);
-        lbl_ADC4.Name = "lbl_ADC4";
-        lbl_ADC4.Size = new Size(171, 37);
-        lbl_ADC4.TabIndex = 54;
-        lbl_ADC4.Text = "0";
-        lbl_ADC4.TextAlign = ContentAlignment.MiddleCenter;
-        // 
-        // label33
-        // 
-        label33.AutoSize = true;
-        label33.Dock = DockStyle.Fill;
-        label33.Location = new Point(696, 153);
-        label33.Name = "label33";
-        label33.Size = new Size(166, 37);
-        label33.TabIndex = 55;
-        label33.Text = "ADC 5:";
-        label33.TextAlign = ContentAlignment.MiddleLeft;
-        // 
-        // label34
-        // 
-        label34.AutoSize = true;
-        label34.Dock = DockStyle.Fill;
-        label34.Location = new Point(696, 191);
-        label34.Name = "label34";
-        label34.Size = new Size(166, 37);
-        label34.TabIndex = 56;
-        label34.Text = "ADC 6:";
-        label34.TextAlign = ContentAlignment.MiddleLeft;
-        // 
-        // label35
-        // 
-        label35.AutoSize = true;
-        label35.Dock = DockStyle.Fill;
-        label35.Location = new Point(696, 229);
-        label35.Name = "label35";
-        label35.Size = new Size(166, 37);
-        label35.TabIndex = 57;
-        label35.Text = "ADC 7:";
-        label35.TextAlign = ContentAlignment.MiddleLeft;
-        // 
-        // label36
-        // 
-        label36.AutoSize = true;
-        label36.Dock = DockStyle.Fill;
-        label36.Location = new Point(696, 267);
-        label36.Name = "label36";
-        label36.Size = new Size(166, 37);
-        label36.TabIndex = 58;
-        label36.Text = "ADC 8:";
-        label36.TextAlign = ContentAlignment.MiddleLeft;
-        // 
-        // lbl_ADC5
-        // 
-        lbl_ADC5.AutoSize = true;
-        lbl_ADC5.BackColor = SystemColors.ControlLightLight;
-        lbl_ADC5.Dock = DockStyle.Fill;
-        lbl_ADC5.Location = new Point(869, 153);
-        lbl_ADC5.Name = "lbl_ADC5";
-        lbl_ADC5.Size = new Size(171, 37);
-        lbl_ADC5.TabIndex = 55;
-        lbl_ADC5.Text = "0";
-        lbl_ADC5.TextAlign = ContentAlignment.MiddleCenter;
-        // 
-        // lbl_ADC6
-        // 
-        lbl_ADC6.AutoSize = true;
-        lbl_ADC6.BackColor = SystemColors.ControlLightLight;
-        lbl_ADC6.Dock = DockStyle.Fill;
-        lbl_ADC6.Location = new Point(869, 191);
-        lbl_ADC6.Name = "lbl_ADC6";
-        lbl_ADC6.Size = new Size(171, 37);
-        lbl_ADC6.TabIndex = 55;
-        lbl_ADC6.Text = "0";
-        lbl_ADC6.TextAlign = ContentAlignment.MiddleCenter;
-        // 
-        // lbl_ADC7
-        // 
-        lbl_ADC7.AutoSize = true;
-        lbl_ADC7.BackColor = SystemColors.ControlLightLight;
-        lbl_ADC7.Dock = DockStyle.Fill;
-        lbl_ADC7.Location = new Point(869, 229);
-        lbl_ADC7.Name = "lbl_ADC7";
-        lbl_ADC7.Size = new Size(171, 37);
-        lbl_ADC7.TabIndex = 55;
-        lbl_ADC7.Text = "0";
-        lbl_ADC7.TextAlign = ContentAlignment.MiddleCenter;
-        // 
-        // lbl_ADC8
-        // 
-        lbl_ADC8.AutoSize = true;
-        lbl_ADC8.BackColor = SystemColors.ControlLightLight;
-        lbl_ADC8.Dock = DockStyle.Fill;
-        lbl_ADC8.Location = new Point(869, 267);
-        lbl_ADC8.Name = "lbl_ADC8";
-        lbl_ADC8.Size = new Size(171, 37);
-        lbl_ADC8.TabIndex = 55;
-        lbl_ADC8.Text = "0";
-        lbl_ADC8.TextAlign = ContentAlignment.MiddleCenter;
         // 
         // UC_Interface
         // 
@@ -886,11 +1122,15 @@ partial class UC_Interface
         tableLayoutPanel3.ResumeLayout(false);
         tableLayoutPanel3.PerformLayout();
         tableLayoutPanel4.ResumeLayout(false);
+        tbl_Control.ResumeLayout(false);
+        tbl_Control.PerformLayout();
+        ((System.ComponentModel.ISupportInitialize)numFlow1).EndInit();
+        ((System.ComponentModel.ISupportInitialize)numFlow2).EndInit();
+        ((System.ComponentModel.ISupportInitialize)numFlow3).EndInit();
+        ((System.ComponentModel.ISupportInitialize)numFlow4).EndInit();
         tableLayoutPanel7.ResumeLayout(false);
         tableLayoutPanel8.ResumeLayout(false);
         tableLayoutPanel8.PerformLayout();
-        tableLayoutPanel6.ResumeLayout(false);
-        tableLayoutPanel6.PerformLayout();
         ResumeLayout(false);
     }
 
@@ -924,7 +1164,7 @@ partial class UC_Interface
     private DI_Water_Wash.UISource.ToggleButton Tbn_Abort;
     private DI_Water_Wash.UISource.ToggleButton Tbn_UpDown;
     private DI_Water_Wash.UISource.ToggleButton Tbn_OpenClose;
-    private TableLayoutPanel tableLayoutPanel6;
+    private TableLayoutPanel tbl_Control;
     private Label lbl_ADC4;
     private Label label31;
     private Label lbl_ADA4;
@@ -960,4 +1200,28 @@ partial class UC_Interface
     private Label lbl_ADC6;
     private Label lbl_ADC7;
     private Label lbl_ADC8;
+    private Button btn_SetFlow1;
+    private Button btn_SetFlow2;
+    private Button btn_SetFlow3;
+    private Button btn_SetFlow4;
+    private NumericUpDown numFlow1;
+    private NumericUpDown numFlow2;
+    private NumericUpDown numFlow3;
+    private NumericUpDown numFlow4;
+    private Label label13;
+    private Label label11;
+    private Label label9;
+    private Label label7;
+    private Label label15;
+    private Label label18;
+    private Label label20;
+    private Label label22;
+    private Label label24;
+    private Label label28;
+    private DI_Water_Wash.UISource.ToggleButton Tbn_Pump1;
+    private DI_Water_Wash.UISource.ToggleButton Tbn_Pump2;
+    private DI_Water_Wash.UISource.ToggleButton Tbn_Pump3;
+    private DI_Water_Wash.UISource.ToggleButton Tbn_3Valve1;
+    private DI_Water_Wash.UISource.ToggleButton Tbn_3Valve2;
+    private DI_Water_Wash.UISource.ToggleButton Tbn_3Valve3;
 }

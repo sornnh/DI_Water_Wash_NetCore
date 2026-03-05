@@ -18,9 +18,13 @@ public partial class UC_Interface : UserControl
     private int[] DataBits = { 5, 6, 7, 8 };
     private Parity[] Paritys = { Parity.None, Parity.Odd, Parity.Even };
     private StopBits[] stopBits = { StopBits.One, StopBits.None, StopBits.OnePointFive, StopBits.Two };
+    public Label[] ADVLabels = new Label[4];
+    public Label[] ADALabels = new Label[4];
+    public Label[] ADCLabels = new Label[8];
     public UC_Interface()
     {
         InitializeComponent();
+        InitAnalogLabels();
         InitRelayLabels();
         GenerateComPort();
         Cls_Interface.cls_ASPcontrol.OnRequestAddLog += (sender) =>
@@ -37,18 +41,65 @@ public partial class UC_Interface : UserControl
             else
                 funUpdateRelayStatus_Auto(sender);
         };
-        
-        if (ClsUnitManagercs.cls_Units[0].clsSequenceTest.AutoMode)
+        Cls_Interface.OnRequestUpdateAnalog += UpdateAnalog;
+        if (StateCommon.bAuto)
         {
-            DisableAllControl();
             btn_ChangeMode.Text = "AUTO";
+            tbl_RelayControl.Enabled = false;
+            tbl_Control.Enabled = false;
         }
+        else
+        {
+            btn_ChangeMode.Text = "MANUAL";
+            tbl_RelayControl.Enabled = true;
+            tbl_Control.Enabled = true;
+        }
+    }
+
+    private void InitAnalogLabels()
+    {
+        ADALabels[0] = lbl_ADA1;
+        ADALabels[1] = lbl_ADA2;
+        ADALabels[2] = lbl_ADA3;
+        ADALabels[3] = lbl_ADA4;
+        ADVLabels[0] = lbl_ADV1;
+        ADVLabels[1] = lbl_ADV2;
+        ADVLabels[2] = lbl_ADV3;
+        ADVLabels[3] = lbl_ADV4;
+        ADCLabels[0] = lbl_ADC1;
+        ADCLabels[1] = lbl_ADC2;
+        ADCLabels[2] = lbl_ADC3;
+        ADCLabels[3] = lbl_ADC4;
+        ADCLabels[4] = lbl_ADC5;
+        ADCLabels[5] = lbl_ADC6;
+        ADCLabels[6] = lbl_ADC7;
+        ADCLabels[7] = lbl_ADC8;
+    }
+
+    private void UpdateAnalog()
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            UpdateAnalogValue(ADVLabels[i], Cls_Interface.cls_ASPcontrol.ADVs[i].ToString("F3"));
+            UpdateAnalogValue(ADALabels[i], Cls_Interface.cls_ASPcontrol.ADIs[i].ToString("F3"));
+        }
+        for (int j = 0; j < 8; j++)
+        {
+            UpdateAnalogValue(ADCLabels[j], Cls_Interface.cls_ASPcontrol.ADCs[j].ToString("F3"));
+        }
+    }
+    private void UpdateAnalogValue(Label lb, string text)
+    {
+        if (lb.InvokeRequired)
+            lb.BeginInvoke(new Action(() => UpdateAnalogValue(lb, text)));
+        else
+            lb.Text = text;
     }
     public void funUpdateRelayStatus_Auto(Cls_ASPcontrol unit)
     {
         UpdateRelayStatus(unit.relayStates); // Sau đó mới cập nhật UI
         if (ClsUnitManagercs.cls_Units == null) return;
-        if (!ClsUnitManagercs.cls_Units[0].clsSequenceTest.AutoMode) return;
+        if (!StateCommon.bAuto) return;
     }
     private void ChangeToggle(ToggleButton toggleButton, bool isOn)
     {
@@ -179,19 +230,6 @@ public partial class UC_Interface : UserControl
     {
         await Cls_Interface.cls_ASPcontrol.GetAllRelay();
     }
-    private void DisableAllControl()
-    {
-        tbl_RelayControl.Enabled = false;
-        Tbn_UpDown.Enabled = false;
-        Tbn_OpenClose.Enabled = false;
-    }
-    private void EnableAllControl()
-    {
-        tbl_RelayControl.Enabled = true;
-        Tbn_UpDown.Enabled = true;
-        Tbn_OpenClose.Enabled = true;
-    }
-
     private void lb_BuzzerU1_Click(object sender, EventArgs e)
     {
 
@@ -199,18 +237,33 @@ public partial class UC_Interface : UserControl
 
     private void btn_ChangeMode_Click(object sender, EventArgs e)
     {
-        if (!ClsUnitManagercs.cls_Units[0].clsSequenceTest.AutoMode)
+        List<bool> autoModes = new List<bool>();
+        for (int i = 0; i < ClsUnitManagercs.cls_Units.Length; i++)
         {
-            ClsUnitManagercs.cls_Units[0].clsSequenceTest.AutoMode = true;
-            DisableAllControl();
-            btn_ChangeMode.Text = "AUTO";
+            if (ClsUnitManagercs.cls_Units[i].clsSequenceTest.testSeq == Cls_SequenceTest.TestSeq.WAIT)
+            {
+                autoModes.Add(true);
+            }
+            else
+            {
+                autoModes.Add(false);
+            }
         }
-        else if (ClsUnitManagercs.cls_Units[0].clsSequenceTest.AutoMode
-            && ClsUnitManagercs.cls_Units[0].clsSequenceTest.testSeq == Cls_SequenceTest.TestSeq.WAIT)
+        if(!autoModes.Contains(false))
         {
-            ClsUnitManagercs.cls_Units[0].clsSequenceTest.AutoMode = false;
-            EnableAllControl();
-            btn_ChangeMode.Text = "MANUAL";
+            StateCommon.bAuto = !StateCommon.bAuto;
+            if (StateCommon.bAuto)
+            {
+                btn_ChangeMode.Text = "AUTO";
+                tbl_RelayControl.Enabled = false;
+                tbl_Control.Enabled = false;
+            }
+            else
+            {
+                btn_ChangeMode.Text = "MANUAL";
+                tbl_RelayControl.Enabled = true;
+                tbl_Control.Enabled = true;
+            }
         }
     }
     private void GenerateComPort()
@@ -270,5 +323,25 @@ public partial class UC_Interface : UserControl
         {
             MessageBox.Show("Error when Scan SN: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+    }
+
+    private async void btn_SetFlow1_Click(object sender, EventArgs e)
+    {
+        await Cls_Interface.cls_ASPcontrol.SetFlowRateCheckResult(1, (int)(numFlow1.Value * 100));
+    }
+
+    private async void btn_SetFlow2_Click(object sender, EventArgs e)
+    {
+        await Cls_Interface.cls_ASPcontrol.SetFlowRateCheckResult(2, (int)(numFlow2.Value * 100));
+    }
+
+    private async void btn_SetFlow3_Click(object sender, EventArgs e)
+    {
+        await Cls_Interface.cls_ASPcontrol.SetFlowRateCheckResult(3, (int)(numFlow3.Value * 100));
+    }
+
+    private async void btn_SetFlow4_Click(object sender, EventArgs e)
+    {
+        await Cls_Interface.cls_ASPcontrol.SetFlowRateCheckResult(4, (int)(numFlow4.Value*100));
     }
 }

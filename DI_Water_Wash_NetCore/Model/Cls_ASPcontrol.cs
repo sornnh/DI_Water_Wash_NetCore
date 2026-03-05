@@ -463,8 +463,8 @@ public class Cls_ASPcontrol
     {
         try
         {
-            SerialPort.Close();
-            _isConnected = SerialPort.IsOpen;
+            SerialPort?.Close();
+            _isConnected = false;
             SerialPort.DataReceived -= SerialPort_DataReceived;
             AddLogText(DateTime.Now.ToString("HH:mm:ss") + "+ ASP Serial closed");
         }

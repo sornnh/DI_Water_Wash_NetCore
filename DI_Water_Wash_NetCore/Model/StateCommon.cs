@@ -27,7 +27,7 @@ public class StateCommon
     }
 
     public static bool bLoading = false;
-
+    public static bool bAuto = true;
     public static string LoadingText = "";
 
     public static int LoadingValue = 0;
@@ -65,6 +65,18 @@ public class StateCommon
     "Any_QC_Inspection", "MRB_Rework"
 };
 
+    public enum SecsionTest
+    {
+        Pressure_Decay,
+        DI_Water_Wash,
+        Helium_Leak_Test,
+        Hot_Air_Drying,
+        Pressure_Dwell,
+        Thermal_Resistance_Test,
+        Fill_N2_to_Ship,
+        Final_Motor_Test
+    }
+    public static SecsionTest Secsion;
     public static void AddTextToRichTextBox(string _text, RichTextBox richTextBox)
     {
         if (richTextBox.InvokeRequired)

@@ -9,6 +9,19 @@ using System.Threading.Tasks;
 
 public static class ClsDefine
 {
+    public class DefineSystem
+    {
+        public static bool IsOfflineMode = bool.Parse(ClsIO.ReadValue("SystemCongfig", "OfflineMode", "False", "C:\\Aavid_Test\\Setup-ini\\SystemConfiguration.ini"));
+        public static int iLifeTimeWarning = int.Parse(ClsIO.ReadValue("SystemCongfig", "LifeTimeWarning", "20", "C:\\Aavid_Test\\Setup-ini\\SystemConfiguration.ini"));
+        public static string sQDlogpath = ClsIO.ReadValue("SystemCongfig", "QDlogpath", "C:\\Model\\LogLifeTime\\QDlifetime.json", "C:\\Aavid_Test\\Setup-ini\\SystemConfiguration.ini");
+        //public static string sOringlogpath = ClsIO.ReadValue("SystemCongfig", "Oringlogpath", "C:\\Model\\LogLifeTime\\Oringlifetime.json", "C:\\Aavid_Test\\Setup-ini\\SystemConfiguration.ini");
+        public static string sQD2logpath = ClsIO.ReadValue("SystemCongfig", "QD2logpath", "C:\\Model\\LogLifeTime\\QD2lifetime.json", "C:\\Aavid_Test\\Setup-ini\\SystemConfiguration.ini");
+        //public static string sOring2logpath = ClsIO.ReadValue("SystemCongfig", "Oring2logpath", "C:\\Model\\LogLifeTime\\Oring2lifetime.json", "C:\\Aavid_Test\\Setup-ini\\SystemConfiguration.ini");
+        public static string sQD3logpath = ClsIO.ReadValue("SystemCongfig", "QD2logpath", "C:\\Model\\LogLifeTime\\QD2lifetime.json", "C:\\Aavid_Test\\Setup-ini\\SystemConfiguration.ini");
+        //public static string sOring2logpath = ClsIO.ReadValue("SystemCongfig", "Oring2logpath", "C:\\Model\\LogLifeTime\\Oring2lifetime.json", "C:\\Aavid_Test\\Setup-ini\\SystemConfiguration.ini");
+        public static string sQD4logpath = ClsIO.ReadValue("SystemCongfig", "QD2logpath", "C:\\Model\\LogLifeTime\\QD2lifetime.json", "C:\\Aavid_Test\\Setup-ini\\SystemConfiguration.ini");
+        //public static string sOring2logpath = ClsIO.ReadValue("SystemCongfig", "Oring2logpath", "C:\\Model\\LogLifeTime\\Oring2lifetime.json", "C:\\Aavid_Test\\Setup-ini\\SystemConfiguration.ini");
+    }
     public class DefineASP
     {
         public static string PortName = ClsIO.ReadValue("ASPSerialPort", "SerialCom", "", "C:\\Aavid_Test\\Setup-ini\\SerialPort.ini");
@@ -61,6 +74,10 @@ public static class ClsDefine
             ClsIO.WriteValue("N2_Pressure", "N2_Pressure_Voltge_Max", N2_PressureVoltgeMax.ToString(), $"C:\\Aavid_Test\\Setup-ini\\AnalogSensorConfiguration.ini");
             ClsIO.WriteValue("N2_Pressure", "N2_Pressure_Voltge_Min", N2_PressureVoltgeMin.ToString(), $"C:\\Aavid_Test\\Setup-ini\\AnalogSensorConfiguration.ini");
         }
+    }
+    public class DefineTesting
+    {
+        public static int Time2stable = 20;
     }
 }
 

@@ -60,7 +60,7 @@ public partial class UC_Parameter : UserControl
         tableLayout.Controls.Add(pl_infor, 0, 0);
         tabPage.Controls.Add(tableLayout);
         tabControl3.TabPages.Add(tabPage);
-        UC_PartNumberInfor uC_PartNumberInfors = new UC_PartNumberInfor(0, UC_PartNumberInfor.SecsionTest.PressureDwell);
+        UC_PartNumberInfor uC_PartNumberInfors = new UC_PartNumberInfor(0, UC_PartNumberInfor.SecsionTest.DIWaterWash);
         uC_PartNumberInfors.InitUI();
         uC_PartNumberInfors.Dock = DockStyle.Fill;
         pl_infor.Controls.Add(uC_PartNumberInfors);

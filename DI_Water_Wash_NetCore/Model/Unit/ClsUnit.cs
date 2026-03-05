@@ -166,6 +166,11 @@ public class ClsUnit
     public double iN2FillPressure { get; private set; }
     public double iN2FillPressureTolerance { get; private set; }
     #endregion
+    #region Fixture lifetime
+    public int iQDLifeTime { get; private set; }
+    public int iOringLifeTime { get; private set; }
+
+    #endregion
     #region PressureDwell
     public float fMinPressureDwellFill { get; private set; } //Set_Pressure
     public float fMaxPressureDwellFill { get; private set; } //Max_Set_Pressure
@@ -191,6 +196,7 @@ public class ClsUnit
         GenerateProcessTesting();
         GetLimitTesting();
         GetSNVerify();
+        GetFixtureLifeTime();
         clsSequenceCommon = new Cls_SequenceCommon(_uIndex);
         Thread thrcommon = new Thread(funThreadCommon);
         thrcommon.IsBackground = true;
@@ -202,6 +208,39 @@ public class ClsUnit
         thrtest.Name = "ThreadTest";
         thrtest.Start();
     }
+    private void GetFixtureLifeTime()
+    {
+        iQDLifeTime = 6000;      // default
+        iOringLifeTime = 1000;  // default
+
+        string query = $@"
+    SELECT FixtureType, LifeTimeLimit
+    FROM [EquipmentManagerment].[dbo].[EquipmentFixtureLifeTimeSetting]
+    WHERE Process_Monitor = '{StateCommon.Secsion.ToString()}'";
+
+        DataTable dt = ParameterDB.ExecuteQuery(query);
+
+        if (dt != null)
+        {
+            foreach (DataRow row in dt.Rows)
+            {
+                string fixtureType = row["FixtureType"].ToString();
+                int lifeTime = Convert.ToInt32(row["LifeTimeLimit"]);
+
+                switch (fixtureType)
+                {
+                    case "QD":
+                        iQDLifeTime = lifeTime;
+                        break;
+                    case "Oring":
+                        iOringLifeTime = lifeTime;
+                        break;
+                }
+            }
+        }
+
+    }
+
     private void funThreadCommon()
     {
         Thread.Sleep(5000);
