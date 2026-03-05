@@ -94,7 +94,7 @@ public partial class FrmScanQRCable : Form
             if (QDlifeTime != null)
             {
                 QDlifeTime.TimeUsed = dtResult.Rows.Count + 1;
-                QDlifeTime.LifeTimeWarning = ClsUnitManagercs.cls_Units[QDNo].iQDLifeTime - dtResult.Rows.Count;
+                QDlifeTime.LifeTimeWarning = ClsUnitManagercs.cls_Units[QDNo-1].iQDLifeTime - dtResult.Rows.Count;
                 LifeTimeLogManager.AddOrReplaceLog(QDlifeTime, ClsDefine.DefineSystem.sQDlogpath);
             }
             if (QDlifeTime == null || dtResult.Rows.Count == 0)
@@ -102,7 +102,7 @@ public partial class FrmScanQRCable : Form
                 QDlifeTime = new LifeTimeLog();
                 QDlifeTime.SerialNumber = serialNumber;
                 QDlifeTime.TimeUsed = dtResult.Rows.Count + 1;
-                QDlifeTime.LifeTimeWarning = ClsUnitManagercs.cls_Units[QDNo].iQDLifeTime - dtResult.Rows.Count;
+                QDlifeTime.LifeTimeWarning = ClsUnitManagercs.cls_Units[QDNo - 1].iQDLifeTime - dtResult.Rows.Count;
                 QDlifeTime.DateTimeAdded = DateTime.Now;
                 LifeTimeLogManager.AddOrReplaceLog(QDlifeTime, ClsDefine.DefineSystem.sQDlogpath);
             }
@@ -113,7 +113,7 @@ public partial class FrmScanQRCable : Form
             if (QD2lifeTime != null)
             {
                 QD2lifeTime.TimeUsed = dtResult.Rows.Count + 1;
-                QD2lifeTime.LifeTimeWarning = ClsUnitManagercs.cls_Units[QDNo].iQDLifeTime - dtResult.Rows.Count;
+                QD2lifeTime.LifeTimeWarning = ClsUnitManagercs.cls_Units[QDNo - 1].iQDLifeTime - dtResult.Rows.Count;
                 LifeTimeLogManager.AddOrReplaceLog(QD2lifeTime, ClsDefine.DefineSystem.sQD2logpath);
             }
             if (QD2lifeTime == null || dtResult.Rows.Count == 0)
@@ -121,7 +121,7 @@ public partial class FrmScanQRCable : Form
                 QD2lifeTime = new LifeTimeLog();
                 QD2lifeTime.SerialNumber = serialNumber;
                 QD2lifeTime.TimeUsed = dtResult.Rows.Count + 1;
-                QD2lifeTime.LifeTimeWarning = ClsUnitManagercs.cls_Units[QDNo].iQDLifeTime - dtResult.Rows.Count;
+                QD2lifeTime.LifeTimeWarning = ClsUnitManagercs.cls_Units[QDNo - 1].iQDLifeTime - dtResult.Rows.Count;
                 QD2lifeTime.DateTimeAdded = DateTime.Now;
                 LifeTimeLogManager.AddOrReplaceLog(QD2lifeTime, ClsDefine.DefineSystem.sQD2logpath);
             }
@@ -132,7 +132,7 @@ public partial class FrmScanQRCable : Form
             if (QD3lifeTime != null)
             {
                 QD3lifeTime.TimeUsed = dtResult.Rows.Count + 1;
-                QD3lifeTime.LifeTimeWarning = ClsUnitManagercs.cls_Units[QDNo].iQDLifeTime - dtResult.Rows.Count;
+                QD3lifeTime.LifeTimeWarning = ClsUnitManagercs.cls_Units[QDNo - 1].iQDLifeTime - dtResult.Rows.Count;
                 LifeTimeLogManager.AddOrReplaceLog(QD3lifeTime, ClsDefine.DefineSystem.sQD3logpath);
             }
             if (QD3lifeTime == null || dtResult.Rows.Count == 0)
@@ -140,7 +140,7 @@ public partial class FrmScanQRCable : Form
                 QD3lifeTime  = new LifeTimeLog();
                 QD3lifeTime.SerialNumber = serialNumber;
                 QD3lifeTime.TimeUsed = dtResult.Rows.Count + 1;
-                QD3lifeTime.LifeTimeWarning = ClsUnitManagercs.cls_Units[QDNo].iQDLifeTime - dtResult.Rows.Count;
+                QD3lifeTime.LifeTimeWarning = ClsUnitManagercs.cls_Units[QDNo - 1].iQDLifeTime - dtResult.Rows.Count;
                 QD3lifeTime.DateTimeAdded = DateTime.Now;
                 LifeTimeLogManager.AddOrReplaceLog(QD3lifeTime, ClsDefine.DefineSystem.sQD3logpath);
             }
@@ -151,7 +151,7 @@ public partial class FrmScanQRCable : Form
             if (QD4lifeTime != null)
             {
                 QD4lifeTime.TimeUsed = dtResult.Rows.Count + 1;
-                QD4lifeTime.LifeTimeWarning = ClsUnitManagercs.cls_Units[QDNo].iQDLifeTime - dtResult.Rows.Count;
+                QD4lifeTime.LifeTimeWarning = ClsUnitManagercs.cls_Units[QDNo - 1].iQDLifeTime - dtResult.Rows.Count;
                 LifeTimeLogManager.AddOrReplaceLog(QD4lifeTime, ClsDefine.DefineSystem.sQD4logpath);
             }
             if (QD4lifeTime == null || dtResult.Rows.Count == 0)
@@ -159,7 +159,7 @@ public partial class FrmScanQRCable : Form
                 QD4lifeTime = new LifeTimeLog();
                 QD4lifeTime.SerialNumber = serialNumber;
                 QD4lifeTime.TimeUsed = dtResult.Rows.Count + 1;
-                QD4lifeTime.LifeTimeWarning = ClsUnitManagercs.cls_Units[QDNo].iQDLifeTime - dtResult.Rows.Count;
+                QD4lifeTime.LifeTimeWarning = ClsUnitManagercs.cls_Units[QDNo - 1].iQDLifeTime - dtResult.Rows.Count;
                 QD4lifeTime.DateTimeAdded = DateTime.Now;
                 LifeTimeLogManager.AddOrReplaceLog(QD4lifeTime, ClsDefine.DefineSystem.sQD4logpath);
             }
