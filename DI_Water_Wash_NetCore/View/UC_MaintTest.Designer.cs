@@ -65,6 +65,11 @@
             procTesting = new ProgressBar();
             lb_Fixture = new Label();
             tableLayoutPanel8 = new TableLayoutPanel();
+            tableLayoutPanel15 = new TableLayoutPanel();
+            lblQDLifeTimeValue = new Label();
+            lblQDLifeTime = new Label();
+            lblQDUsedTimesValue = new Label();
+            lblQDUsedHeader = new Label();
             tableLayoutPanel9 = new TableLayoutPanel();
             label4 = new Label();
             label5 = new Label();
@@ -81,7 +86,6 @@
             tableLayoutPanel12 = new TableLayoutPanel();
             progressBar1 = new ProgressBar();
             label8 = new Label();
-            pictureBox1 = new PictureBox();
             timer1 = new System.Windows.Forms.Timer(components);
             tableLayoutPanel1.SuspendLayout();
             tableLayoutPanel2.SuspendLayout();
@@ -94,11 +98,11 @@
             ((System.ComponentModel.ISupportInitialize)dgv_process).BeginInit();
             tableLayoutPanel13.SuspendLayout();
             tableLayoutPanel8.SuspendLayout();
+            tableLayoutPanel15.SuspendLayout();
             tableLayoutPanel9.SuspendLayout();
             tableLayoutPanel10.SuspendLayout();
             tableLayoutPanel11.SuspendLayout();
             tableLayoutPanel12.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
             // tableLayoutPanel1
@@ -616,11 +620,14 @@
             // 
             tableLayoutPanel8.ColumnCount = 1;
             tableLayoutPanel8.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tableLayoutPanel8.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
+            tableLayoutPanel8.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
+            tableLayoutPanel8.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
+            tableLayoutPanel8.Controls.Add(tableLayoutPanel15, 0, 4);
             tableLayoutPanel8.Controls.Add(tableLayoutPanel9, 0, 0);
             tableLayoutPanel8.Controls.Add(tableLayoutPanel10, 0, 1);
             tableLayoutPanel8.Controls.Add(tableLayoutPanel11, 0, 2);
             tableLayoutPanel8.Controls.Add(tableLayoutPanel12, 0, 3);
-            tableLayoutPanel8.Controls.Add(pictureBox1, 0, 4);
             tableLayoutPanel8.Dock = DockStyle.Fill;
             tableLayoutPanel8.Location = new Point(3, 37);
             tableLayoutPanel8.Margin = new Padding(3, 4, 3, 4);
@@ -631,8 +638,75 @@
             tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Percent, 16.9421482F));
             tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Percent, 18.5950413F));
             tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Percent, 34.29752F));
+            tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
             tableLayoutPanel8.Size = new Size(470, 241);
             tableLayoutPanel8.TabIndex = 5;
+            // 
+            // tableLayoutPanel15
+            // 
+            tableLayoutPanel15.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
+            tableLayoutPanel15.ColumnCount = 4;
+            tableLayoutPanel15.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+            tableLayoutPanel15.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+            tableLayoutPanel15.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+            tableLayoutPanel15.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+            tableLayoutPanel15.Controls.Add(lblQDLifeTimeValue, 3, 0);
+            tableLayoutPanel15.Controls.Add(lblQDLifeTime, 2, 0);
+            tableLayoutPanel15.Controls.Add(lblQDUsedTimesValue, 1, 0);
+            tableLayoutPanel15.Controls.Add(lblQDUsedHeader, 0, 0);
+            tableLayoutPanel15.Dock = DockStyle.Top;
+            tableLayoutPanel15.Location = new Point(3, 159);
+            tableLayoutPanel15.Name = "tableLayoutPanel15";
+            tableLayoutPanel15.RowCount = 1;
+            tableLayoutPanel15.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            tableLayoutPanel15.Size = new Size(464, 28);
+            tableLayoutPanel15.TabIndex = 4;
+            // 
+            // lblQDLifeTimeValue
+            // 
+            lblQDLifeTimeValue.AutoSize = true;
+            lblQDLifeTimeValue.BackColor = SystemColors.ControlLightLight;
+            lblQDLifeTimeValue.Dock = DockStyle.Fill;
+            lblQDLifeTimeValue.Font = new Font("Century Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            lblQDLifeTimeValue.Location = new Point(349, 1);
+            lblQDLifeTimeValue.Name = "lblQDLifeTimeValue";
+            lblQDLifeTimeValue.Size = new Size(111, 26);
+            lblQDLifeTimeValue.TabIndex = 4;
+            lblQDLifeTimeValue.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // lblQDLifeTime
+            // 
+            lblQDLifeTime.AutoSize = true;
+            lblQDLifeTime.Dock = DockStyle.Fill;
+            lblQDLifeTime.Location = new Point(234, 1);
+            lblQDLifeTime.Name = "lblQDLifeTime";
+            lblQDLifeTime.Size = new Size(108, 26);
+            lblQDLifeTime.TabIndex = 3;
+            lblQDLifeTime.Text = "Lifetime:";
+            lblQDLifeTime.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // lblQDUsedTimesValue
+            // 
+            lblQDUsedTimesValue.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            lblQDUsedTimesValue.AutoSize = true;
+            lblQDUsedTimesValue.BackColor = SystemColors.ControlLightLight;
+            lblQDUsedTimesValue.Font = new Font("Century Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            lblQDUsedTimesValue.Location = new Point(119, 1);
+            lblQDUsedTimesValue.Name = "lblQDUsedTimesValue";
+            lblQDUsedTimesValue.Size = new Size(108, 26);
+            lblQDUsedTimesValue.TabIndex = 2;
+            lblQDUsedTimesValue.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // lblQDUsedHeader
+            // 
+            lblQDUsedHeader.AutoSize = true;
+            lblQDUsedHeader.Dock = DockStyle.Fill;
+            lblQDUsedHeader.Location = new Point(4, 1);
+            lblQDUsedHeader.Name = "lblQDUsedHeader";
+            lblQDUsedHeader.Size = new Size(108, 26);
+            lblQDUsedHeader.TabIndex = 1;
+            lblQDUsedHeader.Text = "QD Used Times:";
+            lblQDUsedHeader.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // tableLayoutPanel9
             // 
@@ -846,18 +920,6 @@
             label8.Text = "Progress Step:";
             label8.TextAlign = ContentAlignment.MiddleLeft;
             // 
-            // pictureBox1
-            // 
-            pictureBox1.BorderStyle = BorderStyle.FixedSingle;
-            pictureBox1.Dock = DockStyle.Fill;
-            pictureBox1.Location = new Point(3, 160);
-            pictureBox1.Margin = new Padding(3, 4, 3, 4);
-            pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(464, 77);
-            pictureBox1.SizeMode = PictureBoxSizeMode.CenterImage;
-            pictureBox1.TabIndex = 4;
-            pictureBox1.TabStop = false;
-            // 
             // timer1
             // 
             timer1.Tick += timer1_Tick;
@@ -890,6 +952,8 @@
             tableLayoutPanel13.ResumeLayout(false);
             tableLayoutPanel13.PerformLayout();
             tableLayoutPanel8.ResumeLayout(false);
+            tableLayoutPanel15.ResumeLayout(false);
+            tableLayoutPanel15.PerformLayout();
             tableLayoutPanel9.ResumeLayout(false);
             tableLayoutPanel9.PerformLayout();
             tableLayoutPanel10.ResumeLayout(false);
@@ -898,7 +962,6 @@
             tableLayoutPanel11.PerformLayout();
             tableLayoutPanel12.ResumeLayout(false);
             tableLayoutPanel12.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ResumeLayout(false);
 
         }
@@ -941,7 +1004,6 @@
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel12;
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel13;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label11;
@@ -959,5 +1021,10 @@
         private TableLayoutPanel tableLayoutPanel14;
         private Label label14;
         private ComboBox cbb_TestMode;
+        private TableLayoutPanel tableLayoutPanel15;
+        private Label lblQDLifeTimeValue;
+        private Label lblQDLifeTime;
+        private Label lblQDUsedTimesValue;
+        private Label lblQDUsedHeader;
     }
 }

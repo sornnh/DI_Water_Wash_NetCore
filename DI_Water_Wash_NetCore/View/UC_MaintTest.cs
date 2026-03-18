@@ -17,7 +17,7 @@ namespace DI_Water_Wash.Unit
         public int UnitIndex { get; private set; }
         private string[] Testmodes = new string[4] { "Production Test", "Production Retest", "Engineering Test", "Golden Sample Test" };
         private string password;
-        public UC_MaintTest(int index,string pass)
+        public UC_MaintTest(int index, string pass)
         {
             InitializeComponent();
 
@@ -45,6 +45,11 @@ namespace DI_Water_Wash.Unit
             ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest.OnRequestUpdateResult += UpdateModeTest;
             this.cbb_TestMode.Items.AddRange(Testmodes);
             this.cbb_TestMode.SelectedIndex = 0;
+
+            lblQDLifeTimeValue.Text = ClsUnitManagercs.cls_Units[UnitIndex].iQDLifeTime.ToString();
+
+            UpdateLabelColor(lblQDUsedTimesValue, ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest.iQDTimeused.ToString(),
+                 ClsUnitManagercs.cls_Units[UnitIndex].iQDLifeTime - ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest.iQDTimeused > ClsDefine.DefineSystem.iLifeTimeWarning ? SystemColors.ControlLightLight : Color.Red);
         }
         private void UpdateModeTest()
         {
@@ -290,6 +295,8 @@ namespace DI_Water_Wash.Unit
                     txt_SN.Enabled = false;
                     Updatelabel("ERROR", lb_Status);
                     Updatelabel("ERROR", lb_Result);
+                    UpdateLabelColor(lblQDUsedTimesValue, ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest.iQDTimeused.ToString(),
+                                     ClsUnitManagercs.cls_Units[UnitIndex].iQDLifeTime - ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest.iQDTimeused > ClsDefine.DefineSystem.iLifeTimeWarning ? SystemColors.ControlLightLight : Color.Red); break;
                     break;
                 case Cls_SequenceTest.TestSeq.PRE_WASHING:
                     Hidenlabel(lb_Airpressure);
@@ -347,6 +354,9 @@ namespace DI_Water_Wash.Unit
                     Updatelabel((ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest.sw_reverse_drying.ElapsedMilliseconds / 1000).ToString("0"), lb_CurrentTime);
                     UpdatePercentTotal(100);
                     break;
+                case Cls_SequenceTest.TestSeq.END:
+                    UpdateLabelColor(lblQDUsedTimesValue, ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest.iQDTimeused.ToString(),
+                                     ClsUnitManagercs.cls_Units[UnitIndex].iQDLifeTime - ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest.iQDTimeused > ClsDefine.DefineSystem.iLifeTimeWarning ? SystemColors.ControlLightLight : Color.Red); break;
                 default:
                     txt_SN.Enabled = false;
                     Updatelabel("Testing", lb_Status);
@@ -383,6 +393,22 @@ namespace DI_Water_Wash.Unit
                     break;
             }
         }
+
+        private void UpdateLabelColor(Label lb, string _text, Color backcolor = default)
+        {
+            if (lb.InvokeRequired)
+            {
+                lb.BeginInvoke(new Action(() => { UpdateLabelColor(lb, _text, backcolor); }));
+            }
+            else
+            {
+                lb.Text = _text;
+                lb.BackColor = backcolor;
+            }
+        }
+
+
+
 
         private void txt_SN_TextChanged(object sender, EventArgs e)
         {
@@ -430,6 +456,11 @@ namespace DI_Water_Wash.Unit
                 }
                 dgv_process.ResumeLayout();
             }
+        }
+
+        private void tableLayoutPanel8_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }
