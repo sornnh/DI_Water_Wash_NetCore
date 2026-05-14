@@ -179,6 +179,15 @@ public class ClsUnit
     public float fMaxPressureDwellDrop { get; private set; } //Max_drop
     public float fMinPressureDwellDrop { get; private set; } //Min_drop
     #endregion
+
+    #region Config SN in range WO
+    public bool bVerify_SN_in_WO { get; private set; } = false;
+    public int iSNin_WO_Ctl_String_Length { get; private set; }
+    public int iSNin_WO_Ctl_String_Offset { get; private set; }
+    private string Customer_Name;
+    public int iFirst_SN_in_WO { get; private set; }
+    public int iLast_SN_in_WO { get; private set; }
+    #endregion
     private int _UnitIndex;
     public Cls_SequenceCommon clsSequenceCommon { get; private set; }
     public Cls_SequenceTest clsSequenceTest { get; private set; }
@@ -741,7 +750,10 @@ public class ClsUnit
                             [No_Linked_PN_5],
                             [No_Linked_PN_6],
                             [No_Linked_PN_7],
-                            [No_Linked_PN_8]  
+                            [No_Linked_PN_8],
+                            [Customer_Name],
+                            [Serial_Length],
+                            [SN_Offset]
                             FROM [Parameters_SZ].[dbo].[Aavid_Part_Numbers] WHERE [ASSY_PN] = '{AssyPN}' order by Date_Time";
         DataTable dataTable = ParameterDB.ExecuteQuery(query);
         DataRow dataRow = dataTable.Rows[dataTable.Rows.Count - 1];
@@ -761,6 +773,56 @@ public class ClsUnit
                 case "Ctl_Str_Offset":
                     Ctl_Str_Offset = Convert.ToInt32(dataRow[column]);
                     break;
+                case "Customer_Name":
+                    Customer_Name = dataRow[column] == DBNull.Value || dataRow[column] == null
+                        ? string.Empty
+                        : dataRow[column].ToString();
+                    break;
+
+                case "Serial_Length":
+                    iSNin_WO_Ctl_String_Length = dataRow[column] == DBNull.Value || dataRow[column] == null
+                        ? 0
+                        : Convert.ToInt32(dataRow[column]);
+                    break;
+
+                case "SN_Offset":
+                    iSNin_WO_Ctl_String_Offset = dataRow[column] == DBNull.Value || dataRow[column] == null
+                        ? 0
+                        : Convert.ToInt32(dataRow[column]);
+                    break;
+            }
+        }
+        if (Customer_Name != string.Empty)
+        {
+            if (Customer_Name.Contains("GTS") && iSNin_WO_Ctl_String_Length > 0 && iSNin_WO_Ctl_String_Offset > 0)
+            {
+                string queryWO = $@"SELECT [Assy_PN]
+                                          ,[Work_Order]
+                                          ,[Date_Time]
+                                          ,[First_Serial]
+                                          ,[Last_Serial]
+                                      FROM [Production_SZ].[dbo].[BOYD_Production_Work_Orders]
+                                      where [ASSY_PN] = '{AssyPN}' and [Work_Order] ='{WO}' order by Date_Time ASC";
+                DataTable dataTableWO = ParameterDB.ExecuteQuery(queryWO);
+                DataRow dataRowWO = dataTableWO.Rows[dataTable.Rows.Count - 1];
+                foreach (DataColumn column in dataRowWO.Table.Columns)
+                {
+                    switch (column.ColumnName)
+                    {
+                        case "First_Serial":
+                            iFirst_SN_in_WO = dataRowWO[column] == DBNull.Value || dataRowWO[column] == null
+                                ? 0
+                                : Convert.ToInt32(dataRowWO[column]);
+                            break;
+                        case "Last_Serial":
+                            iLast_SN_in_WO = dataRowWO[column] == DBNull.Value || dataRowWO[column] == null
+                                ? 0
+                                : Convert.ToInt32(dataRowWO[column]);
+                            break;
+                    }
+                }
+                if (iFirst_SN_in_WO > 0 && iLast_SN_in_WO > 0)
+                    bVerify_SN_in_WO = true;
             }
         }
         string[] linkedColumns = new[]

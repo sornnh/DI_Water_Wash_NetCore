@@ -125,6 +125,7 @@ partial class UC_SelectPartNumber
         txt_WO.Name = "txt_WO";
         txt_WO.Size = new Size(312, 26);
         txt_WO.TabIndex = 2;
+        txt_WO.TextChanged += txt_WO_TextChanged;
         // 
         // lb_WO
         // 
@@ -153,6 +154,7 @@ partial class UC_SelectPartNumber
         // cbb_PartNumberInfo
         // 
         cbb_PartNumberInfo.Dock = DockStyle.Fill;
+        cbb_PartNumberInfo.Enabled = false;
         cbb_PartNumberInfo.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
         cbb_PartNumberInfo.FormattingEnabled = true;
         cbb_PartNumberInfo.Location = new Point(130, 3);
@@ -165,6 +167,7 @@ partial class UC_SelectPartNumber
         // txt_Description
         // 
         txt_Description.Dock = DockStyle.Fill;
+        txt_Description.Enabled = false;
         txt_Description.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
         txt_Description.Location = new Point(130, 42);
         txt_Description.Margin = new Padding(4, 3, 4, 3);
@@ -188,6 +191,7 @@ partial class UC_SelectPartNumber
         // txt_PN
         // 
         txt_PN.Dock = DockStyle.Fill;
+        txt_PN.Enabled = false;
         txt_PN.Font = new Font("Microsoft Sans Serif", 12F);
         txt_PN.Location = new Point(4, 42);
         txt_PN.Margin = new Padding(4, 3, 4, 3);

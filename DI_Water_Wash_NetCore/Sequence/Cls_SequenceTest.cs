@@ -261,7 +261,7 @@ public class Cls_SequenceTest
         sw_reverse_drying = new Stopwatch();
 
         _testSeq = TestSeq.WAIT;
-        ProductionDB.Initialize("10.102.4.20", "Production_SZ", "sa", "nuventixleo");
+        ProductionDB.Initialize("10.102.4.20", "Production_SZ", "readuser", "Boyd@2025");
         ProductionDB.Open();
         var logqd = LifeTimeLogManager.LoadLog(ClsDefine.DefineSystem.sQDlogpath);
         iQDTimeused = logqd != null ? logqd.TimeUsed : 0;
@@ -834,6 +834,14 @@ public class Cls_SequenceTest
     }
     public int IsInProcess(string proc, string sSN, ref DataTable dtResult)
     {
+        if (ClsUnitManagercs.cls_Units[iIndex].bVerify_SN_in_WO)
+        {
+            int iSNindexWO = int.Parse(sSN.Substring(ClsUnitManagercs.cls_Units[iIndex].iSNin_WO_Ctl_String_Offset, ClsUnitManagercs.cls_Units[iIndex].iSNin_WO_Ctl_String_Length));
+            if (iSNindexWO < ClsUnitManagercs.cls_Units[iIndex].iFirst_SN_in_WO || iSNindexWO > ClsUnitManagercs.cls_Units[iIndex].iLast_SN_in_WO)
+            {
+                return 7;
+            }
+        }
         string[] proceslist = ClsUnitManagercs.cls_Units[iIndex].verifyFlags;
         string AssyPN = ClsUnitManagercs.cls_Units[iIndex].AssyPN;
         if (proceslist == null || proceslist.Length == 0)
@@ -913,6 +921,8 @@ public class Cls_SequenceTest
                 return "This product is in MRB, please check MRB log!!!";
             case 6:
                 return "This product is not linked yet!!!";
+            case 7:
+                return $"SN is not in WO {ClsUnitManagercs.cls_Units[iIndex].WO}, SN should be between {ClsUnitManagercs.cls_Units[iIndex].iFirst_SN_in_WO} and {ClsUnitManagercs.cls_Units[iIndex].iLast_SN_in_WO}";
             default:
                 return $"Error is not define {iCode}";
         }

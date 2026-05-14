@@ -31,7 +31,7 @@ public class StateCommon
     public static string LoadingText = "";
 
     public static int LoadingValue = 0;
-
+    public static bool bInitComplete = false;
     public static List<string> DBQuery = new List<string>
 {
     "Verify_Fans_Test", "Verify_Serial_No", "Verify_High_Pressure", "Verify_DeltaT_Test", "Verify_Flow_Test", "Verify_Bubble_Test", "Verify_Thermal_Test", "Verify_Leak_Test", "Verify_Pressure_Dwell", "Verify_Flatness",

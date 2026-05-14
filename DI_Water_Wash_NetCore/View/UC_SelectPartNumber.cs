@@ -40,7 +40,6 @@ public partial class UC_SelectPartNumber : UserControl
         ParameterDB.Close();
         return result;
     }
-        
     private void UC_SelectPartNumber_Load(object sender, EventArgs e)
     {
         this.lb_Fixture.Text = "Fixture " + (UnitIndex + 1).ToString();
@@ -48,7 +47,7 @@ public partial class UC_SelectPartNumber : UserControl
         try
         {
             allLine = File.ReadAllLines(@"C:\Aavid_Test\Setup-ini\Flushing_Part_Numbers.txt");
-            string[] infor = allLine[UnitIndex+1].Split(',');
+            string[] infor = allLine[UnitIndex + 1].Split(',');
             txt_WO.Text = infor[2];
             txt_PN.Text = infor[1];
 
@@ -67,14 +66,12 @@ public partial class UC_SelectPartNumber : UserControl
             Console.WriteLine("Error when get line text from C:\\Aavid_Test\\Setup-ini\\Flushing_Part_Numbers.txt: " + ex.Message);
         }
     }
-
     private void cbb_PartNumberInfo_SelectedIndexChanged(object sender, EventArgs e)
     {
         string selectedPartNumber = cbb_PartNumberInfo.SelectedItem.ToString();
         txt_PN.Text = partNumbersinfor[cbb_PartNumberInfo.SelectedIndex].Split('-')[0].Trim();
         txt_Description.Text = partNumbersinfor[cbb_PartNumberInfo.SelectedIndex].Split('-')[1].Trim();
     }
-
     private void btn_ChangePart_Click(object sender, EventArgs e)
     {
         if (!File.Exists(filePath))
@@ -91,7 +88,7 @@ public partial class UC_SelectPartNumber : UserControl
                 sw.WriteLine("708964-TF-002,708964,,0,Enabled,");
                 sw.WriteLine("708964-TF-003,708964,,0,Enabled,");
             }
-        }    
+        }
         string[] allLine = File.ReadAllLines(@"C:\Aavid_Test\Setup-ini\Flushing_Part_Numbers.txt").Where(line => !string.IsNullOrWhiteSpace(line)).ToArray();
         // Nếu ít hơn 4 phần tử thì tăng lên 4 bằng cách thêm dòng trống
         if (allLine.Length < 5)
@@ -103,10 +100,77 @@ public partial class UC_SelectPartNumber : UserControl
             }
             allLine = lines.ToArray();
         }
-        string[] newLine = new string[] { $"{txt_PN.Text.Trim()}-TF-00{(UnitIndex+1).ToString()}", txt_PN.Text.Trim(), txt_WO.Text.Trim(), "0", "Enabled" };
-        allLine[UnitIndex+1] = string.Join(",", newLine) + ",";
+        string[] newLine = new string[] { $"{txt_PN.Text.Trim()}-TF-00{(UnitIndex + 1).ToString()}", txt_PN.Text.Trim(), txt_WO.Text.Trim(), "0", "Enabled" };
+        allLine[UnitIndex + 1] = string.Join(",", newLine) + ",";
         // Ghi lại file
         File.WriteAllLines(filePath, allLine);
+    }
+    private void txt_WO_TextChanged(object sender, EventArgs e)
+    {
+        if(txt_WO.Text.Length == 10)
+        {
+            string WO = txt_WO.Text.Trim(); 
+            string query = $"SELECT [Assy_PN],[Work_Order]  FROM [Production_SZ].[dbo].[BOYD_Production_Work_Orders]  where Work_Order ='{WO}'";
+            var itemDB = new Cls_DBMsSQL();
+            itemDB.Initialize("10.102.4.20", "Production_SZ", "readuser", "Boyd@2025");
+            itemDB.Open();
+            DataTable dtResult = itemDB.ExecuteQuery(query);
+            itemDB.Close();
+            if (dtResult.Rows.Count > 0)
+            {
+                string assyPn = dtResult.Rows[0]["Assy_PN"].ToString();
+                txt_PN.Text = assyPn;
+                for (int i = 0; i < partNumbersinfor.Count; i++)
+                {
+                    if (partNumbersinfor[i].Contains(assyPn))
+                    {
+                        cbb_PartNumberInfo.SelectedIndex = i;
+                        txt_Description.Text = partNumbersinfor[i].Split('-')[1].Trim();
+                        break;
+                    }
+                }
+                if (!File.Exists(filePath))
+                {
+                    string DirectoryPath = Path.GetDirectoryName(filePath);
+                    if (!Directory.Exists(DirectoryPath))
+                    {
+                        Directory.CreateDirectory(DirectoryPath);
+                    }
+                    using (StreamWriter sw = new StreamWriter(filePath))
+                    {
+                        sw.WriteLine("Fixture_Id,Part_Number,Work_Order,T2_Off,Nest_Enable,");
+                        sw.WriteLine("708966-TF-001,708966,3121369369,0,Enabled,");
+                        sw.WriteLine("708964-TF-002,708964,,0,Enabled,");
+                        sw.WriteLine("708964-TF-003,708964,,0,Enabled,");
+                    }
+                }
+                string[] allLine = File.ReadAllLines(@"C:\Aavid_Test\Setup-ini\Flushing_Part_Numbers.txt").Where(line => !string.IsNullOrWhiteSpace(line)).ToArray();
+                // Nếu ít hơn 4 phần tử thì tăng lên 4 bằng cách thêm dòng trống
+                if (allLine.Length < 5)
+                {
+                    List<string> lines = allLine.ToList();
+                    while (lines.Count < 5)
+                    {
+                        lines.Add(""); // hoặc có thể là "N/A", "None", v.v.
+                    }
+                    allLine = lines.ToArray();
+                }
+                string[] newLine = new string[] { $"{txt_PN.Text.Trim()}-TF-00{(UnitIndex + 1).ToString()}", txt_PN.Text.Trim(), txt_WO.Text.Trim(), "0", "Enabled" };
+                allLine[UnitIndex + 1] = string.Join(",", newLine) + ",";
+                // Ghi lại file
+                File.WriteAllLines(filePath, allLine);
+            }
+            else
+            {
+                using (FrmMessageError frmMessageError = new FrmMessageError("Work Order not found in database. Please call Planning check again", Color.Red, Color.Black))
+                {
+                    frmMessageError.ShowDialog();
+                    StateCommon.bLoading = false;
+                    StateCommon.bInitComplete = false;
+                    Environment.Exit(0);
+                }
+            }
+        }    
     }
 }
 

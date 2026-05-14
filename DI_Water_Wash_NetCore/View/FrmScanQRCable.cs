@@ -19,7 +19,7 @@ public partial class FrmScanQRCable : Form
     public FrmScanQRCable(int QDno, int iQDlifeTime, string stationid)
     {
         InitializeComponent();
-        CableCheckDB.Initialize("10.102.4.20", "EquipmentManagerment", "sa", "nuventixleo");
+        CableCheckDB.Initialize("10.102.4.20", "EquipmentManagerment", "readuser", "Boyd@2025");
         CableCheckDB.Open();
         lbl_Infor.Text = $"Please scan QR Code QD No {QDno} !!!";
         iLifeTimeLimit = iQDlifeTime;
