@@ -792,7 +792,18 @@ public class ClsUnit
                     break;
             }
         }
-        if (Customer_Name != string.Empty)
+
+        query = $"SELECT TOP 1 Enable from ApprovalDB.dbo.ControlItem where EnableItem = 'CheckSNbyWO'";
+        DataTable dt = ParameterDB.ExecuteQuery(query);
+        bool blEnbCheckSNInRangeWOByDB = false;
+
+        if(dt.Rows.Count > 0)
+        {
+            string strRead = dt.Rows[0]["Enable"] == DBNull.Value ? "" : dt.Rows[0]["Enable"].ToString();
+            blEnbCheckSNInRangeWOByDB = strRead == "1";
+        }
+
+        if (Customer_Name != string.Empty && blEnbCheckSNInRangeWOByDB)
         {
             if (Customer_Name.Contains("GTS") && iSNin_WO_Ctl_String_Length > 0 && iSNin_WO_Ctl_String_Offset > 0)
             {
