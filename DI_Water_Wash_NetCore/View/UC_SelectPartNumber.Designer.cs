@@ -34,6 +34,8 @@ partial class UC_SelectPartNumber
         tableLayoutPanel2 = new TableLayoutPanel();
         btn_ChangePart = new Button();
         tableLayoutPanel3 = new TableLayoutPanel();
+        txtOP = new TextBox();
+        label1 = new Label();
         txt_WO = new TextBox();
         lb_WO = new Label();
         checkBox1 = new CheckBox();
@@ -97,9 +99,11 @@ partial class UC_SelectPartNumber
         tableLayoutPanel3.ColumnCount = 2;
         tableLayoutPanel3.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 28.45953F));
         tableLayoutPanel3.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 71.54047F));
+        tableLayoutPanel3.Controls.Add(txtOP, 1, 3);
+        tableLayoutPanel3.Controls.Add(label1, 0, 3);
         tableLayoutPanel3.Controls.Add(txt_WO, 1, 2);
         tableLayoutPanel3.Controls.Add(lb_WO, 0, 2);
-        tableLayoutPanel3.Controls.Add(checkBox1, 1, 3);
+        tableLayoutPanel3.Controls.Add(checkBox1, 1, 4);
         tableLayoutPanel3.Controls.Add(cbb_PartNumberInfo, 1, 0);
         tableLayoutPanel3.Controls.Add(txt_Description, 1, 1);
         tableLayoutPanel3.Controls.Add(lb_Fixture, 0, 0);
@@ -108,45 +112,67 @@ partial class UC_SelectPartNumber
         tableLayoutPanel3.Location = new Point(4, 3);
         tableLayoutPanel3.Margin = new Padding(4, 3, 4, 3);
         tableLayoutPanel3.Name = "tableLayoutPanel3";
-        tableLayoutPanel3.RowCount = 4;
-        tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
-        tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
-        tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
-        tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
+        tableLayoutPanel3.RowCount = 5;
+        tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+        tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+        tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+        tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+        tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
         tableLayoutPanel3.Size = new Size(446, 157);
         tableLayoutPanel3.TabIndex = 1;
+        // 
+        // txtOP
+        // 
+        txtOP.Dock = DockStyle.Fill;
+        txtOP.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+        txtOP.Location = new Point(130, 96);
+        txtOP.Margin = new Padding(4, 3, 4, 3);
+        txtOP.Name = "txtOP";
+        txtOP.Size = new Size(312, 26);
+        txtOP.TabIndex = 12;
+        // 
+        // label1
+        // 
+        label1.AutoSize = true;
+        label1.Dock = DockStyle.Fill;
+        label1.Location = new Point(4, 93);
+        label1.Margin = new Padding(4, 0, 4, 0);
+        label1.Name = "label1";
+        label1.Size = new Size(118, 31);
+        label1.TabIndex = 11;
+        label1.Text = "Operator ID:";
+        label1.TextAlign = ContentAlignment.MiddleLeft;
         // 
         // txt_WO
         // 
         txt_WO.Dock = DockStyle.Fill;
         txt_WO.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-        txt_WO.Location = new Point(130, 81);
+        txt_WO.Location = new Point(130, 65);
         txt_WO.Margin = new Padding(4, 3, 4, 3);
         txt_WO.Name = "txt_WO";
         txt_WO.Size = new Size(312, 26);
         txt_WO.TabIndex = 2;
-        txt_WO.TextChanged += txt_WO_TextChanged;
         // 
         // lb_WO
         // 
         lb_WO.AutoSize = true;
         lb_WO.Dock = DockStyle.Fill;
-        lb_WO.Location = new Point(4, 78);
+        lb_WO.Location = new Point(4, 62);
         lb_WO.Margin = new Padding(4, 0, 4, 0);
         lb_WO.Name = "lb_WO";
-        lb_WO.Size = new Size(118, 39);
+        lb_WO.Size = new Size(118, 31);
         lb_WO.TabIndex = 5;
-        lb_WO.Text = "Work Oder";
+        lb_WO.Text = "Work Oder:";
         lb_WO.TextAlign = ContentAlignment.MiddleLeft;
         // 
         // checkBox1
         // 
         checkBox1.AutoSize = true;
         checkBox1.Dock = DockStyle.Fill;
-        checkBox1.Location = new Point(130, 120);
+        checkBox1.Location = new Point(130, 127);
         checkBox1.Margin = new Padding(4, 3, 4, 3);
         checkBox1.Name = "checkBox1";
-        checkBox1.Size = new Size(312, 34);
+        checkBox1.Size = new Size(312, 27);
         checkBox1.TabIndex = 7;
         checkBox1.Text = "Dual Unit Fixture";
         checkBox1.UseVisualStyleBackColor = true;
@@ -154,7 +180,6 @@ partial class UC_SelectPartNumber
         // cbb_PartNumberInfo
         // 
         cbb_PartNumberInfo.Dock = DockStyle.Fill;
-        cbb_PartNumberInfo.Enabled = false;
         cbb_PartNumberInfo.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
         cbb_PartNumberInfo.FormattingEnabled = true;
         cbb_PartNumberInfo.Location = new Point(130, 3);
@@ -167,9 +192,8 @@ partial class UC_SelectPartNumber
         // txt_Description
         // 
         txt_Description.Dock = DockStyle.Fill;
-        txt_Description.Enabled = false;
         txt_Description.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-        txt_Description.Location = new Point(130, 42);
+        txt_Description.Location = new Point(130, 34);
         txt_Description.Margin = new Padding(4, 3, 4, 3);
         txt_Description.Name = "txt_Description";
         txt_Description.Size = new Size(312, 26);
@@ -183,17 +207,16 @@ partial class UC_SelectPartNumber
         lb_Fixture.Location = new Point(4, 0);
         lb_Fixture.Margin = new Padding(4, 0, 4, 0);
         lb_Fixture.Name = "lb_Fixture";
-        lb_Fixture.Size = new Size(118, 39);
+        lb_Fixture.Size = new Size(118, 31);
         lb_Fixture.TabIndex = 9;
-        lb_Fixture.Text = "Fixture";
+        lb_Fixture.Text = "Fixture:";
         lb_Fixture.TextAlign = ContentAlignment.MiddleCenter;
         // 
         // txt_PN
         // 
         txt_PN.Dock = DockStyle.Fill;
-        txt_PN.Enabled = false;
         txt_PN.Font = new Font("Microsoft Sans Serif", 12F);
-        txt_PN.Location = new Point(4, 42);
+        txt_PN.Location = new Point(4, 34);
         txt_PN.Margin = new Padding(4, 3, 4, 3);
         txt_PN.Name = "txt_PN";
         txt_PN.Size = new Size(118, 26);
@@ -207,7 +230,6 @@ partial class UC_SelectPartNumber
         Margin = new Padding(4, 3, 4, 3);
         Name = "UC_SelectPartNumber";
         Size = new Size(454, 217);
-        Load += UC_SelectPartNumber_Load;
         tableLayoutPanel1.ResumeLayout(false);
         tableLayoutPanel2.ResumeLayout(false);
         tableLayoutPanel3.ResumeLayout(false);
@@ -229,5 +251,7 @@ partial class UC_SelectPartNumber
     private System.Windows.Forms.ComboBox cbb_PartNumberInfo;
     private System.Windows.Forms.Label lb_Fixture;
     private System.Windows.Forms.TextBox txt_PN;
+    private TextBox txtOP;
+    private Label label1;
 }
 

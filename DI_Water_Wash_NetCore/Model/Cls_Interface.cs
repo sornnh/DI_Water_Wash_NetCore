@@ -30,15 +30,17 @@ public static class Cls_Interface
                 for (int i = 0; i < 4; i++)
                 {
                     await cls_ASPcontrol.GetADIAsync(i + 1);
-                    await Task.Delay(100);
+                    await Task.Delay(ticks);
                     await cls_ASPcontrol.GetADVAsync(i + 1);
-                    await Task.Delay(100);
+                    await Task.Delay(ticks);
                 }
                 for (int i = 0; i < 8; i++)
                 {
                     await cls_ASPcontrol.GetADCAsync(i + 1);
-                    await Task.Delay(100);
+                    await Task.Delay(ticks);
                 }
+                await cls_ASPcontrol.GetAllInput();
+                await Task.Delay(ticks);
                 OnRequestUpdateAnalog?.Invoke();
             }
             catch (Exception ex)

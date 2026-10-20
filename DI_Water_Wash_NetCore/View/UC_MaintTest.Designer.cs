@@ -33,7 +33,7 @@
             tableLayoutPanel2 = new TableLayoutPanel();
             tableLayoutPanel14 = new TableLayoutPanel();
             label14 = new Label();
-            cbb_TestMode = new ComboBox();
+            cbb_TestMode = new Boyd.UIControls.NoKeyboardComboBox();
             tableLayoutPanel3 = new TableLayoutPanel();
             tableLayoutPanel4 = new TableLayoutPanel();
             label2 = new Label();
@@ -65,11 +65,6 @@
             procTesting = new ProgressBar();
             lb_Fixture = new Label();
             tableLayoutPanel8 = new TableLayoutPanel();
-            tableLayoutPanel15 = new TableLayoutPanel();
-            lblQDLifeTimeValue = new Label();
-            lblQDLifeTime = new Label();
-            lblQDUsedTimesValue = new Label();
-            lblQDUsedHeader = new Label();
             tableLayoutPanel9 = new TableLayoutPanel();
             label4 = new Label();
             label5 = new Label();
@@ -86,6 +81,7 @@
             tableLayoutPanel12 = new TableLayoutPanel();
             progressBar1 = new ProgressBar();
             label8 = new Label();
+            lbl_QDTimeUsed = new Boyd.UIControls.StatusLabel();
             timer1 = new System.Windows.Forms.Timer(components);
             tableLayoutPanel1.SuspendLayout();
             tableLayoutPanel2.SuspendLayout();
@@ -98,7 +94,6 @@
             ((System.ComponentModel.ISupportInitialize)dgv_process).BeginInit();
             tableLayoutPanel13.SuspendLayout();
             tableLayoutPanel8.SuspendLayout();
-            tableLayoutPanel15.SuspendLayout();
             tableLayoutPanel9.SuspendLayout();
             tableLayoutPanel10.SuspendLayout();
             tableLayoutPanel11.SuspendLayout();
@@ -121,8 +116,8 @@
             tableLayoutPanel1.Name = "tableLayoutPanel1";
             tableLayoutPanel1.RowCount = 5;
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 4F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 29.9760189F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 31.4148674F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 26.3788967F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 34.5323753F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 4.436451F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 30.4556351F));
             tableLayoutPanel1.Size = new Size(476, 834);
@@ -138,7 +133,7 @@
             tableLayoutPanel2.Controls.Add(txt_SN, 0, 1);
             tableLayoutPanel2.Controls.Add(tableLayoutPanel6, 0, 2);
             tableLayoutPanel2.Dock = DockStyle.Fill;
-            tableLayoutPanel2.Location = new Point(3, 583);
+            tableLayoutPanel2.Location = new Point(3, 582);
             tableLayoutPanel2.Margin = new Padding(3, 4, 3, 4);
             tableLayoutPanel2.Name = "tableLayoutPanel2";
             tableLayoutPanel2.RowCount = 4;
@@ -146,7 +141,7 @@
             tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 16.666666F));
             tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 19.5121956F));
             tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 17.4796753F));
-            tableLayoutPanel2.Size = new Size(470, 247);
+            tableLayoutPanel2.Size = new Size(470, 248);
             tableLayoutPanel2.TabIndex = 0;
             // 
             // tableLayoutPanel14
@@ -157,7 +152,7 @@
             tableLayoutPanel14.Controls.Add(label14, 0, 0);
             tableLayoutPanel14.Controls.Add(cbb_TestMode, 1, 0);
             tableLayoutPanel14.Dock = DockStyle.Fill;
-            tableLayoutPanel14.Location = new Point(4, 206);
+            tableLayoutPanel14.Location = new Point(4, 207);
             tableLayoutPanel14.Name = "tableLayoutPanel14";
             tableLayoutPanel14.RowCount = 1;
             tableLayoutPanel14.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
@@ -179,7 +174,6 @@
             // 
             // cbb_TestMode
             // 
-            cbb_TestMode.Dock = DockStyle.Fill;
             cbb_TestMode.DropDownStyle = ComboBoxStyle.DropDownList;
             cbb_TestMode.Font = new Font("Century Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             cbb_TestMode.FormattingEnabled = true;
@@ -316,6 +310,7 @@
             txt_SN.Size = new Size(462, 31);
             txt_SN.TabIndex = 1;
             txt_SN.TextChanged += txt_SN_TextChanged;
+            txt_SN.KeyDown += txt_SN_KeyDown;
             // 
             // tableLayoutPanel6
             // 
@@ -330,7 +325,7 @@
             tableLayoutPanel6.RowCount = 1;
             tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
-            tableLayoutPanel6.Size = new Size(462, 38);
+            tableLayoutPanel6.Size = new Size(462, 39);
             tableLayoutPanel6.TabIndex = 2;
             // 
             // lb_Status
@@ -342,7 +337,7 @@
             lb_Status.Font = new Font("Century Gothic", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lb_Status.Location = new Point(138, 0);
             lb_Status.Name = "lb_Status";
-            lb_Status.Size = new Size(321, 38);
+            lb_Status.Size = new Size(321, 39);
             lb_Status.TabIndex = 0;
             lb_Status.Text = "Null";
             lb_Status.TextAlign = ContentAlignment.MiddleCenter;
@@ -358,13 +353,13 @@
             tableLayoutPanel7.Controls.Add(dgv_process, 0, 1);
             tableLayoutPanel7.Controls.Add(tableLayoutPanel13, 1, 1);
             tableLayoutPanel7.Dock = DockStyle.Fill;
-            tableLayoutPanel7.Location = new Point(3, 286);
+            tableLayoutPanel7.Location = new Point(3, 257);
             tableLayoutPanel7.Margin = new Padding(3, 4, 3, 4);
             tableLayoutPanel7.Name = "tableLayoutPanel7";
             tableLayoutPanel7.RowCount = 2;
             tableLayoutPanel7.RowStyles.Add(new RowStyle(SizeType.Percent, 11.30742F));
             tableLayoutPanel7.RowStyles.Add(new RowStyle(SizeType.Percent, 88.69258F));
-            tableLayoutPanel7.Size = new Size(470, 253);
+            tableLayoutPanel7.Size = new Size(470, 280);
             tableLayoutPanel7.TabIndex = 1;
             // 
             // label1
@@ -374,7 +369,7 @@
             label1.Dock = DockStyle.Fill;
             label1.Location = new Point(4, 1);
             label1.Name = "label1";
-            label1.Size = new Size(186, 28);
+            label1.Size = new Size(186, 31);
             label1.TabIndex = 0;
             label1.Text = "Proces  Station";
             label1.TextAlign = ContentAlignment.MiddleCenter;
@@ -386,7 +381,7 @@
             label3.Dock = DockStyle.Fill;
             label3.Location = new Point(197, 1);
             label3.Name = "label3";
-            label3.Size = new Size(269, 28);
+            label3.Size = new Size(269, 31);
             label3.TabIndex = 0;
             label3.Text = "Testing";
             label3.TextAlign = ContentAlignment.MiddleCenter;
@@ -395,10 +390,10 @@
             // 
             dgv_process.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgv_process.Dock = DockStyle.Fill;
-            dgv_process.Location = new Point(4, 34);
+            dgv_process.Location = new Point(4, 37);
             dgv_process.Margin = new Padding(3, 4, 3, 4);
             dgv_process.Name = "dgv_process";
-            dgv_process.Size = new Size(186, 214);
+            dgv_process.Size = new Size(186, 238);
             dgv_process.TabIndex = 1;
             // 
             // tableLayoutPanel13
@@ -421,7 +416,7 @@
             tableLayoutPanel13.Controls.Add(label20, 2, 2);
             tableLayoutPanel13.Controls.Add(label21, 2, 3);
             tableLayoutPanel13.Dock = DockStyle.Fill;
-            tableLayoutPanel13.Location = new Point(196, 32);
+            tableLayoutPanel13.Location = new Point(196, 35);
             tableLayoutPanel13.Margin = new Padding(2);
             tableLayoutPanel13.Name = "tableLayoutPanel13";
             tableLayoutPanel13.RowCount = 6;
@@ -432,7 +427,7 @@
             tableLayoutPanel13.RowStyles.Add(new RowStyle(SizeType.Percent, 16.666666F));
             tableLayoutPanel13.RowStyles.Add(new RowStyle(SizeType.Percent, 16.666666F));
             tableLayoutPanel13.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            tableLayoutPanel13.Size = new Size(271, 218);
+            tableLayoutPanel13.Size = new Size(271, 242);
             tableLayoutPanel13.TabIndex = 2;
             // 
             // label10
@@ -443,7 +438,7 @@
             label10.Location = new Point(3, 1);
             label10.Margin = new Padding(2, 0, 2, 0);
             label10.Name = "label10";
-            label10.Size = new Size(130, 35);
+            label10.Size = new Size(130, 39);
             label10.TabIndex = 0;
             label10.Text = "Flow Rate:";
             label10.TextAlign = ContentAlignment.MiddleLeft;
@@ -453,10 +448,10 @@
             label11.AutoSize = true;
             label11.Dock = DockStyle.Fill;
             label11.Font = new Font("Century Gothic", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            label11.Location = new Point(3, 37);
+            label11.Location = new Point(3, 41);
             label11.Margin = new Padding(2, 0, 2, 0);
             label11.Name = "label11";
-            label11.Size = new Size(130, 35);
+            label11.Size = new Size(130, 39);
             label11.TabIndex = 1;
             label11.Text = "Air Pressure:";
             label11.TextAlign = ContentAlignment.MiddleLeft;
@@ -466,10 +461,10 @@
             label12.AutoSize = true;
             label12.Dock = DockStyle.Fill;
             label12.Font = new Font("Century Gothic", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            label12.Location = new Point(3, 73);
+            label12.Location = new Point(3, 81);
             label12.Margin = new Padding(2, 0, 2, 0);
             label12.Name = "label12";
-            label12.Size = new Size(130, 35);
+            label12.Size = new Size(130, 39);
             label12.TabIndex = 2;
             label12.Text = "Water Pressure:";
             label12.TextAlign = ContentAlignment.MiddleLeft;
@@ -479,10 +474,10 @@
             label13.AutoSize = true;
             label13.Dock = DockStyle.Fill;
             label13.Font = new Font("Century Gothic", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            label13.Location = new Point(3, 109);
+            label13.Location = new Point(3, 121);
             label13.Margin = new Padding(2, 0, 2, 0);
             label13.Name = "label13";
-            label13.Size = new Size(130, 35);
+            label13.Size = new Size(130, 39);
             label13.TabIndex = 3;
             label13.Text = "Humidity";
             label13.TextAlign = ContentAlignment.MiddleLeft;
@@ -497,7 +492,7 @@
             lb_Flowrate.Location = new Point(138, 1);
             lb_Flowrate.Margin = new Padding(2, 0, 2, 0);
             lb_Flowrate.Name = "lb_Flowrate";
-            lb_Flowrate.Size = new Size(65, 35);
+            lb_Flowrate.Size = new Size(65, 39);
             lb_Flowrate.TabIndex = 4;
             lb_Flowrate.TextAlign = ContentAlignment.MiddleCenter;
             // 
@@ -507,10 +502,10 @@
             lb_Airpressure.BackColor = SystemColors.ControlLightLight;
             lb_Airpressure.Dock = DockStyle.Fill;
             lb_Airpressure.Font = new Font("Century Gothic", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lb_Airpressure.Location = new Point(138, 37);
+            lb_Airpressure.Location = new Point(138, 41);
             lb_Airpressure.Margin = new Padding(2, 0, 2, 0);
             lb_Airpressure.Name = "lb_Airpressure";
-            lb_Airpressure.Size = new Size(65, 35);
+            lb_Airpressure.Size = new Size(65, 39);
             lb_Airpressure.TabIndex = 5;
             lb_Airpressure.TextAlign = ContentAlignment.MiddleCenter;
             // 
@@ -520,10 +515,10 @@
             lb_Waterpressure.BackColor = SystemColors.ControlLightLight;
             lb_Waterpressure.Dock = DockStyle.Fill;
             lb_Waterpressure.Font = new Font("Century Gothic", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lb_Waterpressure.Location = new Point(138, 73);
+            lb_Waterpressure.Location = new Point(138, 81);
             lb_Waterpressure.Margin = new Padding(2, 0, 2, 0);
             lb_Waterpressure.Name = "lb_Waterpressure";
-            lb_Waterpressure.Size = new Size(65, 35);
+            lb_Waterpressure.Size = new Size(65, 39);
             lb_Waterpressure.TabIndex = 6;
             lb_Waterpressure.TextAlign = ContentAlignment.MiddleCenter;
             // 
@@ -533,10 +528,10 @@
             lb_Humidity.BackColor = SystemColors.ControlLightLight;
             lb_Humidity.Dock = DockStyle.Fill;
             lb_Humidity.Font = new Font("Century Gothic", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lb_Humidity.Location = new Point(138, 109);
+            lb_Humidity.Location = new Point(138, 121);
             lb_Humidity.Margin = new Padding(2, 0, 2, 0);
             lb_Humidity.Name = "lb_Humidity";
-            lb_Humidity.Size = new Size(65, 35);
+            lb_Humidity.Size = new Size(65, 39);
             lb_Humidity.TabIndex = 7;
             lb_Humidity.TextAlign = ContentAlignment.MiddleCenter;
             lb_Humidity.Visible = false;
@@ -549,7 +544,7 @@
             label18.Location = new Point(208, 1);
             label18.Margin = new Padding(2, 0, 2, 0);
             label18.Name = "label18";
-            label18.Size = new Size(60, 35);
+            label18.Size = new Size(60, 39);
             label18.TabIndex = 8;
             label18.Text = "LPM";
             label18.TextAlign = ContentAlignment.MiddleCenter;
@@ -559,10 +554,10 @@
             label19.AutoSize = true;
             label19.Dock = DockStyle.Fill;
             label19.Font = new Font("Century Gothic", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            label19.Location = new Point(208, 37);
+            label19.Location = new Point(208, 41);
             label19.Margin = new Padding(2, 0, 2, 0);
             label19.Name = "label19";
-            label19.Size = new Size(60, 35);
+            label19.Size = new Size(60, 39);
             label19.TabIndex = 9;
             label19.Text = "MPa";
             label19.TextAlign = ContentAlignment.MiddleCenter;
@@ -572,10 +567,10 @@
             label20.AutoSize = true;
             label20.Dock = DockStyle.Fill;
             label20.Font = new Font("Century Gothic", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            label20.Location = new Point(208, 73);
+            label20.Location = new Point(208, 81);
             label20.Margin = new Padding(2, 0, 2, 0);
             label20.Name = "label20";
-            label20.Size = new Size(60, 35);
+            label20.Size = new Size(60, 39);
             label20.TabIndex = 10;
             label20.Text = "MPa";
             label20.TextAlign = ContentAlignment.MiddleCenter;
@@ -585,22 +580,22 @@
             label21.AutoSize = true;
             label21.Dock = DockStyle.Fill;
             label21.Font = new Font("Century Gothic", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            label21.Location = new Point(208, 109);
+            label21.Location = new Point(208, 121);
             label21.Margin = new Padding(2, 0, 2, 0);
             label21.Name = "label21";
-            label21.Size = new Size(60, 35);
+            label21.Size = new Size(60, 39);
             label21.TabIndex = 11;
-            label21.Text = "%";
+            label21.Text = "%Rh";
             label21.TextAlign = ContentAlignment.MiddleCenter;
             label21.Visible = false;
             // 
             // procTesting
             // 
             procTesting.Dock = DockStyle.Fill;
-            procTesting.Location = new Point(3, 547);
+            procTesting.Location = new Point(3, 545);
             procTesting.Margin = new Padding(3, 4, 3, 4);
             procTesting.Name = "procTesting";
-            procTesting.Size = new Size(470, 28);
+            procTesting.Size = new Size(470, 29);
             procTesting.TabIndex = 2;
             // 
             // lb_Fixture
@@ -608,7 +603,7 @@
             lb_Fixture.AutoSize = true;
             lb_Fixture.BackColor = SystemColors.MenuHighlight;
             lb_Fixture.Dock = DockStyle.Fill;
-            lb_Fixture.Font = new Font("Century Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            lb_Fixture.Font = new Font("Century Gothic", 20.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lb_Fixture.Location = new Point(3, 0);
             lb_Fixture.Name = "lb_Fixture";
             lb_Fixture.Size = new Size(470, 33);
@@ -623,90 +618,25 @@
             tableLayoutPanel8.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
             tableLayoutPanel8.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
             tableLayoutPanel8.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
-            tableLayoutPanel8.Controls.Add(tableLayoutPanel15, 0, 4);
             tableLayoutPanel8.Controls.Add(tableLayoutPanel9, 0, 0);
             tableLayoutPanel8.Controls.Add(tableLayoutPanel10, 0, 1);
             tableLayoutPanel8.Controls.Add(tableLayoutPanel11, 0, 2);
             tableLayoutPanel8.Controls.Add(tableLayoutPanel12, 0, 3);
+            tableLayoutPanel8.Controls.Add(lbl_QDTimeUsed, 0, 4);
             tableLayoutPanel8.Dock = DockStyle.Fill;
             tableLayoutPanel8.Location = new Point(3, 37);
             tableLayoutPanel8.Margin = new Padding(3, 4, 3, 4);
             tableLayoutPanel8.Name = "tableLayoutPanel8";
             tableLayoutPanel8.RowCount = 5;
-            tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Percent, 15F));
-            tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Percent, 15F));
-            tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Percent, 16.9421482F));
-            tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Percent, 18.5950413F));
-            tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Percent, 34.29752F));
+            tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Percent, 18.8679237F));
+            tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Percent, 18.8679237F));
+            tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Percent, 19.3396225F));
+            tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Percent, 20.2830181F));
+            tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Percent, 21.9917011F));
             tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            tableLayoutPanel8.Size = new Size(470, 241);
+            tableLayoutPanel8.Size = new Size(470, 212);
             tableLayoutPanel8.TabIndex = 5;
-            // 
-            // tableLayoutPanel15
-            // 
-            tableLayoutPanel15.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
-            tableLayoutPanel15.ColumnCount = 4;
-            tableLayoutPanel15.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
-            tableLayoutPanel15.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
-            tableLayoutPanel15.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
-            tableLayoutPanel15.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
-            tableLayoutPanel15.Controls.Add(lblQDLifeTimeValue, 3, 0);
-            tableLayoutPanel15.Controls.Add(lblQDLifeTime, 2, 0);
-            tableLayoutPanel15.Controls.Add(lblQDUsedTimesValue, 1, 0);
-            tableLayoutPanel15.Controls.Add(lblQDUsedHeader, 0, 0);
-            tableLayoutPanel15.Dock = DockStyle.Top;
-            tableLayoutPanel15.Location = new Point(3, 159);
-            tableLayoutPanel15.Name = "tableLayoutPanel15";
-            tableLayoutPanel15.RowCount = 1;
-            tableLayoutPanel15.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanel15.Size = new Size(464, 28);
-            tableLayoutPanel15.TabIndex = 4;
-            // 
-            // lblQDLifeTimeValue
-            // 
-            lblQDLifeTimeValue.AutoSize = true;
-            lblQDLifeTimeValue.BackColor = SystemColors.ControlLightLight;
-            lblQDLifeTimeValue.Dock = DockStyle.Fill;
-            lblQDLifeTimeValue.Font = new Font("Century Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblQDLifeTimeValue.Location = new Point(349, 1);
-            lblQDLifeTimeValue.Name = "lblQDLifeTimeValue";
-            lblQDLifeTimeValue.Size = new Size(111, 26);
-            lblQDLifeTimeValue.TabIndex = 4;
-            lblQDLifeTimeValue.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // lblQDLifeTime
-            // 
-            lblQDLifeTime.AutoSize = true;
-            lblQDLifeTime.Dock = DockStyle.Fill;
-            lblQDLifeTime.Location = new Point(234, 1);
-            lblQDLifeTime.Name = "lblQDLifeTime";
-            lblQDLifeTime.Size = new Size(108, 26);
-            lblQDLifeTime.TabIndex = 3;
-            lblQDLifeTime.Text = "Lifetime:";
-            lblQDLifeTime.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // lblQDUsedTimesValue
-            // 
-            lblQDUsedTimesValue.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            lblQDUsedTimesValue.AutoSize = true;
-            lblQDUsedTimesValue.BackColor = SystemColors.ControlLightLight;
-            lblQDUsedTimesValue.Font = new Font("Century Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblQDUsedTimesValue.Location = new Point(119, 1);
-            lblQDUsedTimesValue.Name = "lblQDUsedTimesValue";
-            lblQDUsedTimesValue.Size = new Size(108, 26);
-            lblQDUsedTimesValue.TabIndex = 2;
-            lblQDUsedTimesValue.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // lblQDUsedHeader
-            // 
-            lblQDUsedHeader.AutoSize = true;
-            lblQDUsedHeader.Dock = DockStyle.Fill;
-            lblQDUsedHeader.Location = new Point(4, 1);
-            lblQDUsedHeader.Name = "lblQDUsedHeader";
-            lblQDUsedHeader.Size = new Size(108, 26);
-            lblQDUsedHeader.TabIndex = 1;
-            lblQDUsedHeader.Text = "QD Used Times:";
-            lblQDUsedHeader.TextAlign = ContentAlignment.MiddleLeft;
+            tableLayoutPanel8.Paint += tableLayoutPanel8_Paint_1;
             // 
             // tableLayoutPanel9
             // 
@@ -727,7 +657,7 @@
             tableLayoutPanel9.RowCount = 1;
             tableLayoutPanel9.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tableLayoutPanel9.RowStyles.Add(new RowStyle(SizeType.Absolute, 35F));
-            tableLayoutPanel9.Size = new Size(464, 28);
+            tableLayoutPanel9.Size = new Size(464, 32);
             tableLayoutPanel9.TabIndex = 0;
             // 
             // label4
@@ -736,7 +666,7 @@
             label4.Dock = DockStyle.Fill;
             label4.Location = new Point(4, 1);
             label4.Name = "label4";
-            label4.Size = new Size(108, 26);
+            label4.Size = new Size(108, 30);
             label4.TabIndex = 0;
             label4.Text = "Cycle:";
             label4.TextAlign = ContentAlignment.MiddleLeft;
@@ -747,7 +677,7 @@
             label5.Dock = DockStyle.Fill;
             label5.Location = new Point(234, 1);
             label5.Name = "label5";
-            label5.Size = new Size(108, 26);
+            label5.Size = new Size(108, 30);
             label5.TabIndex = 0;
             label5.Text = "of";
             label5.TextAlign = ContentAlignment.MiddleCenter;
@@ -760,7 +690,7 @@
             lb_CurentCycle.Font = new Font("Century Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lb_CurentCycle.Location = new Point(119, 1);
             lb_CurentCycle.Name = "lb_CurentCycle";
-            lb_CurentCycle.Size = new Size(108, 26);
+            lb_CurentCycle.Size = new Size(108, 30);
             lb_CurentCycle.TabIndex = 1;
             lb_CurentCycle.TextAlign = ContentAlignment.MiddleCenter;
             // 
@@ -772,7 +702,7 @@
             lb_TotalCycle.Font = new Font("Century Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lb_TotalCycle.Location = new Point(349, 1);
             lb_TotalCycle.Name = "lb_TotalCycle";
-            lb_TotalCycle.Size = new Size(111, 26);
+            lb_TotalCycle.Size = new Size(111, 30);
             lb_TotalCycle.TabIndex = 2;
             lb_TotalCycle.TextAlign = ContentAlignment.MiddleCenter;
             // 
@@ -787,12 +717,12 @@
             tableLayoutPanel10.Controls.Add(label7, 2, 0);
             tableLayoutPanel10.Controls.Add(lb_TimeStep, 1, 0);
             tableLayoutPanel10.Dock = DockStyle.Fill;
-            tableLayoutPanel10.Location = new Point(3, 40);
+            tableLayoutPanel10.Location = new Point(3, 44);
             tableLayoutPanel10.Margin = new Padding(3, 4, 3, 4);
             tableLayoutPanel10.Name = "tableLayoutPanel10";
             tableLayoutPanel10.RowCount = 1;
             tableLayoutPanel10.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanel10.Size = new Size(464, 28);
+            tableLayoutPanel10.Size = new Size(464, 32);
             tableLayoutPanel10.TabIndex = 1;
             // 
             // lb_CycleTest
@@ -801,7 +731,7 @@
             lb_CycleTest.Dock = DockStyle.Fill;
             lb_CycleTest.Location = new Point(4, 1);
             lb_CycleTest.Name = "lb_CycleTest";
-            lb_CycleTest.Size = new Size(222, 26);
+            lb_CycleTest.Size = new Size(222, 30);
             lb_CycleTest.TabIndex = 0;
             lb_CycleTest.Text = "Pre Washing";
             lb_CycleTest.TextAlign = ContentAlignment.MiddleCenter;
@@ -812,7 +742,7 @@
             label7.Dock = DockStyle.Fill;
             label7.Location = new Point(350, 1);
             label7.Name = "label7";
-            label7.Size = new Size(110, 26);
+            label7.Size = new Size(110, 30);
             label7.TabIndex = 1;
             label7.Text = "Sec";
             label7.TextAlign = ContentAlignment.MiddleCenter;
@@ -825,7 +755,7 @@
             lb_TimeStep.Font = new Font("Century Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lb_TimeStep.Location = new Point(233, 1);
             lb_TimeStep.Name = "lb_TimeStep";
-            lb_TimeStep.Size = new Size(110, 26);
+            lb_TimeStep.Size = new Size(110, 30);
             lb_TimeStep.TabIndex = 2;
             lb_TimeStep.TextAlign = ContentAlignment.MiddleCenter;
             // 
@@ -840,12 +770,12 @@
             tableLayoutPanel11.Controls.Add(lb_CurrentTime, 1, 0);
             tableLayoutPanel11.Controls.Add(label9, 2, 0);
             tableLayoutPanel11.Dock = DockStyle.Fill;
-            tableLayoutPanel11.Location = new Point(3, 76);
+            tableLayoutPanel11.Location = new Point(3, 84);
             tableLayoutPanel11.Margin = new Padding(3, 4, 3, 4);
             tableLayoutPanel11.Name = "tableLayoutPanel11";
             tableLayoutPanel11.RowCount = 1;
             tableLayoutPanel11.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanel11.Size = new Size(464, 32);
+            tableLayoutPanel11.Size = new Size(464, 33);
             tableLayoutPanel11.TabIndex = 2;
             // 
             // label6
@@ -854,7 +784,7 @@
             label6.Dock = DockStyle.Fill;
             label6.Location = new Point(4, 1);
             label6.Name = "label6";
-            label6.Size = new Size(222, 30);
+            label6.Size = new Size(222, 31);
             label6.TabIndex = 0;
             label6.Text = "Run time step";
             label6.TextAlign = ContentAlignment.MiddleCenter;
@@ -867,7 +797,7 @@
             lb_CurrentTime.Font = new Font("Century Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lb_CurrentTime.Location = new Point(233, 1);
             lb_CurrentTime.Name = "lb_CurrentTime";
-            lb_CurrentTime.Size = new Size(109, 30);
+            lb_CurrentTime.Size = new Size(109, 31);
             lb_CurrentTime.TabIndex = 1;
             lb_CurrentTime.TextAlign = ContentAlignment.MiddleCenter;
             // 
@@ -877,7 +807,7 @@
             label9.Dock = DockStyle.Fill;
             label9.Location = new Point(349, 1);
             label9.Name = "label9";
-            label9.Size = new Size(111, 30);
+            label9.Size = new Size(111, 31);
             label9.TabIndex = 2;
             label9.Text = "Sec";
             label9.TextAlign = ContentAlignment.MiddleCenter;
@@ -891,13 +821,13 @@
             tableLayoutPanel12.Controls.Add(progressBar1, 1, 0);
             tableLayoutPanel12.Controls.Add(label8, 0, 0);
             tableLayoutPanel12.Dock = DockStyle.Fill;
-            tableLayoutPanel12.Location = new Point(3, 116);
+            tableLayoutPanel12.Location = new Point(3, 125);
             tableLayoutPanel12.Margin = new Padding(3, 4, 3, 4);
             tableLayoutPanel12.Name = "tableLayoutPanel12";
             tableLayoutPanel12.RowCount = 1;
             tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Absolute, 35F));
-            tableLayoutPanel12.Size = new Size(464, 36);
+            tableLayoutPanel12.Size = new Size(464, 35);
             tableLayoutPanel12.TabIndex = 3;
             // 
             // progressBar1
@@ -906,7 +836,7 @@
             progressBar1.Location = new Point(133, 5);
             progressBar1.Margin = new Padding(3, 4, 3, 4);
             progressBar1.Name = "progressBar1";
-            progressBar1.Size = new Size(327, 26);
+            progressBar1.Size = new Size(327, 25);
             progressBar1.TabIndex = 0;
             // 
             // label8
@@ -915,10 +845,30 @@
             label8.Dock = DockStyle.Fill;
             label8.Location = new Point(4, 1);
             label8.Name = "label8";
-            label8.Size = new Size(122, 34);
+            label8.Size = new Size(122, 33);
             label8.TabIndex = 1;
             label8.Text = "Progress Step:";
             label8.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // lbl_QDTimeUsed
+            // 
+            lbl_QDTimeUsed.BackColor = Color.Transparent;
+            lbl_QDTimeUsed.BorderColor = Color.FromArgb(134, 239, 172);
+            lbl_QDTimeUsed.Dock = DockStyle.Fill;
+            lbl_QDTimeUsed.Font = new Font("Segoe UI Semibold", 10.5F, FontStyle.Bold);
+            lbl_QDTimeUsed.ForeColor = Color.Black;
+            lbl_QDTimeUsed.HoverForeColor = Color.Black;
+            lbl_QDTimeUsed.HoverSurfaceColor = Color.FromArgb(130, 175, 138);
+            lbl_QDTimeUsed.IndicatorColor = Color.FromArgb(22, 163, 74);
+            lbl_QDTimeUsed.Location = new Point(3, 167);
+            lbl_QDTimeUsed.Name = "lbl_QDTimeUsed";
+            lbl_QDTimeUsed.Padding = new Padding(8, 4, 8, 4);
+            lbl_QDTimeUsed.ShadowColor = Color.FromArgb(100, 0, 0, 0);
+            lbl_QDTimeUsed.ShadowOffset = new Point(1, 1);
+            lbl_QDTimeUsed.Size = new Size(464, 42);
+            lbl_QDTimeUsed.SurfaceColor = Color.FromArgb(236, 253, 243);
+            lbl_QDTimeUsed.TabIndex = 4;
+            lbl_QDTimeUsed.Text = "QD 1 Time Used: 0/0";
             // 
             // timer1
             // 
@@ -952,8 +902,6 @@
             tableLayoutPanel13.ResumeLayout(false);
             tableLayoutPanel13.PerformLayout();
             tableLayoutPanel8.ResumeLayout(false);
-            tableLayoutPanel15.ResumeLayout(false);
-            tableLayoutPanel15.PerformLayout();
             tableLayoutPanel9.ResumeLayout(false);
             tableLayoutPanel9.PerformLayout();
             tableLayoutPanel10.ResumeLayout(false);
@@ -1020,11 +968,7 @@
         private Button btn_Abort;
         private TableLayoutPanel tableLayoutPanel14;
         private Label label14;
-        private ComboBox cbb_TestMode;
-        private TableLayoutPanel tableLayoutPanel15;
-        private Label lblQDLifeTimeValue;
-        private Label lblQDLifeTime;
-        private Label lblQDUsedTimesValue;
-        private Label lblQDUsedHeader;
+        private Boyd.UIControls.NoKeyboardComboBox cbb_TestMode;
+        private Boyd.UIControls.StatusLabel lbl_QDTimeUsed;
     }
 }

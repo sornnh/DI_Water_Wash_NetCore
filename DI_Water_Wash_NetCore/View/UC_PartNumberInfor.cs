@@ -84,16 +84,8 @@ public partial class UC_PartNumberInfor : UserControl
 
     private void GetDescreption()   
     {
-        Cls_DBMsSQL ParameterDB = new Cls_DBMsSQL();
-        ParameterDB.Initialize("10.102.4.20", "Parameters_SZ", "readuser", "Boyd@2025");
-        ParameterDB.Open();
-        string PN = ClsUnitManagercs.cls_Units[0].AssyPN;
-        string query = $"SELECT \r\nDescription\r\nFROM [Parameters_SZ].[dbo].[Aavid_Part_Numbers]\r\nWHERE [ASSY_PN] = '{PN}' order by Date_Time";
-        DataTable dt = ParameterDB.ExecuteQuery(query);
-        txtPN.Text = PN;
-        if (dt.Rows.Count == 0) txtDescription.Text = "";
-        else txtDescription.Text = dt.Rows[dt.Rows.Count-1][0].ToString();
-        ParameterDB.Close();
+        txtPN.Text = ClsUnitManagercs.AssyPN;
+        txtDescription.Text = ClsUnitManagercs.cls_Units[0].Description;
     }
 
     void SafeAddToPanel(Panel targetPanel, Control control)

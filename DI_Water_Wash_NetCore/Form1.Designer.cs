@@ -56,6 +56,7 @@
             lbl_Interface = new Label();
             pl_Main = new Panel();
             timer1 = new System.Windows.Forms.Timer(components);
+            lbl_ResetToolLife = new Label();
             tableLayoutPanel1.SuspendLayout();
             tableLayoutPanel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
@@ -319,18 +320,15 @@
             // 
             // tableLayoutPanel5
             // 
-            tableLayoutPanel5.ColumnCount = 5;
-            tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20F));
-            tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20F));
-            tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20F));
-            tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20F));
-            tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20F));
-            tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
-            tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
-            tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
-            tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
-            tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
-            tableLayoutPanel5.Controls.Add(lbl_Exit, 4, 0);
+            tableLayoutPanel5.ColumnCount = 6;
+            tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
+            tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
+            tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
+            tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
+            tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
+            tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
+            tableLayoutPanel5.Controls.Add(lbl_ResetToolLife, 4, 0);
+            tableLayoutPanel5.Controls.Add(lbl_Exit, 5, 0);
             tableLayoutPanel5.Controls.Add(lbl_Parameter, 3, 0);
             tableLayoutPanel5.Controls.Add(lbl_Setting, 2, 0);
             tableLayoutPanel5.Controls.Add(lbl_Main, 0, 0);
@@ -349,9 +347,9 @@
             lbl_Exit.BackColor = SystemColors.ActiveCaption;
             lbl_Exit.Dock = DockStyle.Fill;
             lbl_Exit.Font = new Font("Century Gothic", 12F);
-            lbl_Exit.Location = new Point(1511, 0);
+            lbl_Exit.Location = new Point(1573, 0);
             lbl_Exit.Name = "lbl_Exit";
-            lbl_Exit.Size = new Size(372, 30);
+            lbl_Exit.Size = new Size(310, 30);
             lbl_Exit.TabIndex = 3;
             lbl_Exit.Text = "EXIT";
             lbl_Exit.TextAlign = ContentAlignment.MiddleCenter;
@@ -363,9 +361,9 @@
             lbl_Parameter.BackColor = SystemColors.ActiveCaption;
             lbl_Parameter.Dock = DockStyle.Fill;
             lbl_Parameter.Font = new Font("Century Gothic", 12F);
-            lbl_Parameter.Location = new Point(1134, 0);
+            lbl_Parameter.Location = new Point(945, 0);
             lbl_Parameter.Name = "lbl_Parameter";
-            lbl_Parameter.Size = new Size(371, 30);
+            lbl_Parameter.Size = new Size(308, 30);
             lbl_Parameter.TabIndex = 2;
             lbl_Parameter.Text = "PARAMETER";
             lbl_Parameter.TextAlign = ContentAlignment.MiddleCenter;
@@ -377,12 +375,13 @@
             lbl_Setting.BackColor = SystemColors.ActiveCaption;
             lbl_Setting.Dock = DockStyle.Fill;
             lbl_Setting.Font = new Font("Century Gothic", 12F);
-            lbl_Setting.Location = new Point(757, 0);
+            lbl_Setting.Location = new Point(631, 0);
             lbl_Setting.Name = "lbl_Setting";
-            lbl_Setting.Size = new Size(371, 30);
+            lbl_Setting.Size = new Size(308, 30);
             lbl_Setting.TabIndex = 1;
             lbl_Setting.Text = "SETTING";
             lbl_Setting.TextAlign = ContentAlignment.MiddleCenter;
+            lbl_Setting.Click += lbl_Setting_Click;
             // 
             // lbl_Main
             // 
@@ -392,7 +391,7 @@
             lbl_Main.Font = new Font("Century Gothic", 12F);
             lbl_Main.Location = new Point(3, 0);
             lbl_Main.Name = "lbl_Main";
-            lbl_Main.Size = new Size(371, 30);
+            lbl_Main.Size = new Size(308, 30);
             lbl_Main.TabIndex = 0;
             lbl_Main.Text = "MAIN";
             lbl_Main.TextAlign = ContentAlignment.MiddleCenter;
@@ -404,9 +403,9 @@
             lbl_Interface.BackColor = SystemColors.ActiveCaption;
             lbl_Interface.Dock = DockStyle.Fill;
             lbl_Interface.Font = new Font("Century Gothic", 12F);
-            lbl_Interface.Location = new Point(380, 0);
+            lbl_Interface.Location = new Point(317, 0);
             lbl_Interface.Name = "lbl_Interface";
-            lbl_Interface.Size = new Size(371, 30);
+            lbl_Interface.Size = new Size(308, 30);
             lbl_Interface.TabIndex = 0;
             lbl_Interface.Text = "INTERFACE";
             lbl_Interface.TextAlign = ContentAlignment.MiddleCenter;
@@ -423,6 +422,20 @@
             // timer1
             // 
             timer1.Tick += timer1_Tick;
+            // 
+            // lbl_ResetToolLife
+            // 
+            lbl_ResetToolLife.AutoSize = true;
+            lbl_ResetToolLife.BackColor = SystemColors.ActiveCaption;
+            lbl_ResetToolLife.Dock = DockStyle.Fill;
+            lbl_ResetToolLife.Font = new Font("Century Gothic", 12F);
+            lbl_ResetToolLife.Location = new Point(1259, 0);
+            lbl_ResetToolLife.Name = "lbl_ResetToolLife";
+            lbl_ResetToolLife.Size = new Size(308, 30);
+            lbl_ResetToolLife.TabIndex = 4;
+            lbl_ResetToolLife.Text = "RESET TOOL LIFE";
+            lbl_ResetToolLife.TextAlign = ContentAlignment.MiddleCenter;
+            lbl_ResetToolLife.Click += lbl_ResetToolLife_Click;
             // 
             // FrmMain
             // 
@@ -480,5 +493,6 @@
         private Label lbl_Interface;
         private Panel pl_Main;
         private System.Windows.Forms.Timer timer1;
+        private Label lbl_ResetToolLife;
     }
 }

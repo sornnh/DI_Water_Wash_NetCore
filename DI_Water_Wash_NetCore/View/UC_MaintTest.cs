@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualBasic.Logging;
+﻿using Boyd.UIControls;
+using LifeTimeToolCheck;
+using Microsoft.VisualBasic.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -28,6 +30,19 @@ namespace DI_Water_Wash.Unit
             lb_Status.Text = "Ready for test";
             lb_TotalCycle.Text = ClsUnitManagercs.cls_Units[UnitIndex].iWash_Cycle.ToString();
             timer1.Start();
+            if (this.cbb_TestMode == null)
+            {
+                this.cbb_TestMode = new Boyd.UIControls.NoKeyboardComboBox
+                {
+                    Dock = DockStyle.Fill,
+                    DropDownStyle = ComboBoxStyle.DropDownList,
+                    Font = new Font("Century Gothic", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0),
+                    FormattingEnabled = true,
+                    Name = "cbb_TestMode"
+                };
+                this.cbb_TestMode.SelectedIndexChanged += cbb_TestMode_SelectedIndexChanged;
+                tableLayoutPanel8.Controls.Add(this.cbb_TestMode, 1, 0);
+            }
             //pictureBox1.Image = Image.FromFile(@"panel.jpg");
             if (ClsUnitManagercs.cls_Units[UnitIndex].bCheck_DI_Huminity)
             {
@@ -42,14 +57,101 @@ namespace DI_Water_Wash.Unit
                 label21.Visible = false;
             }
             ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest.OnRequestAddProcessLogTest += UpdateProcessData;
-            ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest.OnRequestUpdateResult += UpdateModeTest;
+            ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest.OnRequestUpdateTestMode += UpdateModeTest;
+            ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest.OnRequestUpdateResult += UpdateLabelResult;
+            ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest.OnRequestUpdateSN += UpdateSN;
+            ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest.OnRequestUpdateToolLife += UpdateToolLife;
             this.cbb_TestMode.Items.AddRange(Testmodes);
             this.cbb_TestMode.SelectedIndex = 0;
+            InitFixtureLayout();
+            UpdateToolLife(null, EventArgs.Empty);
+        }
 
-            lblQDLifeTimeValue.Text = ClsUnitManagercs.cls_Units[UnitIndex].iQDLifeTime.ToString();
+        public void UpdateToolLife(object? sender, EventArgs e)
+        {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new Action(() => UpdateToolLife(sender, e)));
+                return;
+            }
+            var sequence = ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest;
+            var QDToolLife = sequence.checkQD;
 
-            UpdateLabelColor(lblQDUsedTimesValue, ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest.iQDTimeused.ToString(),
-                 ClsUnitManagercs.cls_Units[UnitIndex].iQDLifeTime - ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest.iQDTimeused > ClsDefine.DefineSystem.iLifeTimeWarning ? SystemColors.ControlLightLight : Color.Red);
+            if (QDToolLife != null && QDToolLife.isActiveCheck && lbl_QDTimeUsed != null)
+            {
+                int timeUsed = QDToolLife.GetTimeUsed(0);
+                bool warning = QDToolLife.iLifeTimeLimit - timeUsed < QDToolLife.iLifeTimeWarning;
+                bool block = QDToolLife.iLifeTimeLimit - timeUsed <= 0;
+                UpdateStatusLabel(
+                    lbl_QDTimeUsed,
+                    $"QD {UnitIndex + 1} Time Used: {timeUsed}/{QDToolLife.iLifeTimeLimit}");
+                if (block)
+                {
+                    lbl_QDTimeUsed.Status = StatusState.NG;
+                }
+                else if (warning)
+                {
+                    lbl_QDTimeUsed.Status = StatusState.Warning;
+                }
+                else
+                {
+                    lbl_QDTimeUsed.Status = StatusState.OK;
+                }
+            }
+        }
+
+        private void InitFixtureLayout()
+        {
+            var sequence = ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest;
+            var QDToolLife = sequence.checkQD;
+            if (QDToolLife.isActiveCheck)
+            {
+                int timeUsed = QDToolLife.GetTimeUsed(UnitIndex);
+                bool warning = QDToolLife.iLifeTimeLimit - timeUsed < QDToolLife.iLifeTimeWarning;
+                bool block = QDToolLife.iLifeTimeLimit - timeUsed <= 0;
+                UpdateStatusLabel(
+                    lbl_QDTimeUsed,
+                    $"QD {UnitIndex + 1} Time Used: {timeUsed}/{QDToolLife.iLifeTimeLimit}");
+
+                if (block)
+                {
+                    lbl_QDTimeUsed.Status = StatusState.NG;
+                }
+                else if (warning)
+                {
+                    lbl_QDTimeUsed.Status = StatusState.Warning;
+                }
+                else
+                {
+                    lbl_QDTimeUsed.Status = StatusState.OK;
+                }
+            }
+            else
+            {
+                lbl_QDTimeUsed.Visible = false;
+            }
+        }
+
+        private void UpdateStatusLabel(StatusLabel lb, string _text)
+        {
+            if (lb.InvokeRequired)
+            {
+                lb.BeginInvoke(new Action(() => { UpdateStatusLabel(lb, _text); }));
+            }
+            else
+            {
+                lb.Text = _text;
+            }
+        }
+
+        private void UpdateSN(string sender)
+        {
+            if (this.txt_SN.InvokeRequired)
+            {
+                this.BeginInvoke(new Action(() => { UpdateSN(sender); }));
+            }
+            else
+                txt_SN.Text = sender;
         }
         private void UpdateModeTest()
         {
@@ -93,6 +195,7 @@ namespace DI_Water_Wash.Unit
         }
         public void SetSNForTest()
         {
+            if (ClsDefine.DefineFixture.bAutoScanner) return;
             if (this.InvokeRequired)
             {
                 this.BeginInvoke(new Action(() => SetSNForTest()));
@@ -279,6 +382,7 @@ namespace DI_Water_Wash.Unit
                     Updatelabel("Ready for test", lb_Status);
                     break;
                 case Cls_SequenceTest.TestSeq.SN_INSERT:
+                    if (ClsDefine.DefineFixture.bAutoScanner) break;
                     txt_SN.Enabled = true;
                     txt_SN.Focus();
                     Updatelabel("Wait for insert SN", lb_Status);
@@ -295,8 +399,6 @@ namespace DI_Water_Wash.Unit
                     txt_SN.Enabled = false;
                     Updatelabel("ERROR", lb_Status);
                     Updatelabel("ERROR", lb_Result);
-                    UpdateLabelColor(lblQDUsedTimesValue, ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest.iQDTimeused.ToString(),
-                                     ClsUnitManagercs.cls_Units[UnitIndex].iQDLifeTime - ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest.iQDTimeused > ClsDefine.DefineSystem.iLifeTimeWarning ? SystemColors.ControlLightLight : Color.Red); break;
                     break;
                 case Cls_SequenceTest.TestSeq.PRE_WASHING:
                     Hidenlabel(lb_Airpressure);
@@ -354,44 +456,41 @@ namespace DI_Water_Wash.Unit
                     Updatelabel((ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest.sw_reverse_drying.ElapsedMilliseconds / 1000).ToString("0"), lb_CurrentTime);
                     UpdatePercentTotal(100);
                     break;
-                case Cls_SequenceTest.TestSeq.END:
-                    UpdateLabelColor(lblQDUsedTimesValue, ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest.iQDTimeused.ToString(),
-                                     ClsUnitManagercs.cls_Units[UnitIndex].iQDLifeTime - ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest.iQDTimeused > ClsDefine.DefineSystem.iLifeTimeWarning ? SystemColors.ControlLightLight : Color.Red); break;
                 default:
                     txt_SN.Enabled = false;
                     Updatelabel("Testing", lb_Status);
                     break;
             }
-            switch (ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceCommon.process)
-            {
-                case Cls_SequenceCommon.SequenceState.Idle:
-                    Updatelabel("Idle", lb_StatusMachine);
-                    lb_StatusMachine.BackColor = Color.DarkOrange;
-                    UpdateLabelResult(ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest.TestResult);
-                    break;
-                case Cls_SequenceCommon.SequenceState.Running:
-                    Updatelabel("Running", lb_StatusMachine);
-                    lb_StatusMachine.BackColor = Color.Yellow;
-                    UpdateLabelResult("RUNNING");
-                    break;
-                case Cls_SequenceCommon.SequenceState.CompletedPass:
-                    Updatelabel("Pass", lb_StatusMachine);
-                    lb_StatusMachine.BackColor = Color.Green;
-                    UpdateLabelResult("PASS");
-                    lb_Result.BackColor = Color.Green;
-                    break;
-                case Cls_SequenceCommon.SequenceState.CompletedFail:
-                    Updatelabel("Fail", lb_StatusMachine);
-                    lb_StatusMachine.BackColor = Color.Red;
-                    UpdateLabelResult(ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest.TestResult);
-                    lb_Result.BackColor = Color.Red;
-                    break;
-                case Cls_SequenceCommon.SequenceState.Error:
-                    Updatelabel("Error", lb_StatusMachine);
-                    lb_StatusMachine.BackColor = Color.Red;
-                    UpdateLabelResult("ERROR");
-                    break;
-            }
+            //switch (ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceCommon.process)
+            //{
+            //    case Cls_SequenceCommon.SequenceState.Idle:
+            //        Updatelabel("Idle", lb_StatusMachine);
+            //        lb_StatusMachine.BackColor = Color.DarkOrange;
+            //        UpdateLabelResult(ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest.TestResult);
+            //        break;
+            //    case Cls_SequenceCommon.SequenceState.Running:
+            //        Updatelabel("Running", lb_StatusMachine);
+            //        lb_StatusMachine.BackColor = Color.Yellow;
+            //        UpdateLabelResult("RUNNING");
+            //        break;
+            //    case Cls_SequenceCommon.SequenceState.CompletedPass:
+            //        Updatelabel("Pass", lb_StatusMachine);
+            //        lb_StatusMachine.BackColor = Color.Green;
+            //        UpdateLabelResult("PASS");
+            //        lb_Result.BackColor = Color.Green;
+            //        break;
+            //    case Cls_SequenceCommon.SequenceState.CompletedFail:
+            //        Updatelabel("Fail", lb_StatusMachine);
+            //        lb_StatusMachine.BackColor = Color.Red;
+            //        UpdateLabelResult(ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest.TestResult);
+            //        lb_Result.BackColor = Color.Red;
+            //        break;
+            //    case Cls_SequenceCommon.SequenceState.Error:
+            //        Updatelabel("Error", lb_StatusMachine);
+            //        lb_StatusMachine.BackColor = Color.Red;
+            //        UpdateLabelResult("ERROR");
+            //        break;
+            //}
         }
 
         private void UpdateLabelColor(Label lb, string _text, Color backcolor = default)
@@ -412,6 +511,7 @@ namespace DI_Water_Wash.Unit
 
         private void txt_SN_TextChanged(object sender, EventArgs e)
         {
+            return;
             string SN = txt_SN.Text.Trim();
 
             // Kiểm tra nếu độ dài của SN đã đủ
@@ -461,6 +561,22 @@ namespace DI_Water_Wash.Unit
         private void tableLayoutPanel8_Paint(object sender, PaintEventArgs e)
         {
 
+        }
+
+        private void tableLayoutPanel8_Paint_1(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void txt_SN_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                string SN = txt_SN.Text.Trim();
+                // Nếu đủ độ dài, thực hiện hành động cần thiết
+                ClsUnitManagercs.cls_Units[UnitIndex].clsSequenceTest.SN = txt_SN.Text.Trim();
+                txt_SN.Enabled = false;  // Vô hiệu hóa TextBox sau khi nhập đủ SN
+            }
         }
     }
 }

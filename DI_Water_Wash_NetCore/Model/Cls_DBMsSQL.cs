@@ -189,50 +189,113 @@ using log4net;
         }
         return result;
     }
-    // Thêm vào đây:
-    public bool SaveToLogMonths_LogTable(string SN, string PN, DateTime dateTime, string Station, string FailCode, string proc, string stepNo)
+    public bool SaveToPressureDecayLog(string serial, string assyPN, string station, string failCode, string Test_Type, double PressureFill, string Operator, string Remark, string Work_Order, double Pressure_drop, string FixID, string Dp_Unit, string Fill_Unit, string stepNo)
+    {
+        const string query = @"
+    INSERT INTO [Production_SZ].[dbo].[LCS_Pressure_and_Sniffing_Test_Log]
+    (Serial, Assy_PN, Date_Time, Station, FailCode,Test_Type, Param_Value,Operator,Remark,Work_Order, Pressure_drop,Fixture_ID,Pressure_Drop_Unit,Pressure_Fill_Unit,Step_No)
+    VALUES
+    (@Serial, @Assy_PN, @Date_Time, @Station, @FailCode, @Test_Type, @Param_Value, @Operator, @Remark, @Work_Order, @Pressure_drop,@Fixture_ID,@Pressure_Drop_Unit,@Pressure_Fill_Unit,@Step_No);";
+
+        try
         {
-            bool result = false;
-            string query = @"
-        INSERT INTO [Production_SZ].[dbo].[Production_Flow_All_Months_Log]
-        (Serial, Assy_PN, Date_Time, Station, FailCode, Process_Step, Step_No)
-        VALUES 
-        (@Serial, @Assy_PN, @Date_Time, @Station, @FailCode, @Process_Step, @Step_No);";
-
-            try
+            Open();
+            using (var command = new SqlCommand(query, connection))
             {
-                Open();
-                using (var command = new SqlCommand(query, connection))
+                command.Parameters.AddWithValue("@Serial", serial ?? "");
+                command.Parameters.AddWithValue("@Assy_PN", assyPN ?? "");
+                command.Parameters.AddWithValue("@Date_Time", DateTime.Now);
+                command.Parameters.AddWithValue("@Station", station ?? "");
+                command.Parameters.AddWithValue("@FailCode", failCode ?? "");
+                command.Parameters.AddWithValue("@Test_Type", Test_Type ?? "");
+                if (!double.IsNaN(PressureFill))
                 {
-                    command.Parameters.AddWithValue("@Serial", SN ?? "");
-                    command.Parameters.AddWithValue("@Assy_PN", PN ?? "");
-                    command.Parameters.AddWithValue("@Date_Time", dateTime);
-                    command.Parameters.AddWithValue("@Station", Station ?? "");
-                    command.Parameters.AddWithValue("@FailCode", FailCode ?? "");
-                    command.Parameters.AddWithValue("@Process_Step", proc ?? "");
-
-                    // Chuyển đổi stepNo sang int trước khi thêm
-                    if (int.TryParse(stepNo, out int stepNumber))
-                        command.Parameters.AddWithValue("@Step_No", stepNumber);
-                    else
-                        command.Parameters.AddWithValue("@Step_No", 0); // hoặc throw lỗi tùy logic của bạn
-
-                    command.ExecuteNonQuery();
+                    command.Parameters.AddWithValue("@Param_Value", PressureFill);
                 }
-                result = true;
+                else
+                {
+                    command.Parameters.AddWithValue("@Param_Value", DBNull.Value);
+                }
+                command.Parameters.AddWithValue("@Operator", Operator ?? "");
+                command.Parameters.AddWithValue("@Remark", Remark);
+                command.Parameters.AddWithValue("@Work_Order", Work_Order ?? "");
+                if (!double.IsNaN(Pressure_drop))
+                {
+                    command.Parameters.AddWithValue("@Pressure_drop", Pressure_drop);
+                }
+                else
+                {
+                    command.Parameters.AddWithValue("@Pressure_drop", DBNull.Value); // hoặc giá trị mặc định
+                }
+                command.Parameters.AddWithValue("@Fixture_ID", FixID);
+                command.Parameters.AddWithValue("@Pressure_Drop_Unit", Dp_Unit);
+                command.Parameters.AddWithValue("@Pressure_Fill_Unit", Fill_Unit);
+                // Chuyển đổi stepNo sang int trước khi thêm
+                if (int.TryParse(stepNo, out int stepNumber))
+                    command.Parameters.AddWithValue("@Step_No", stepNumber);
+                else
+                    command.Parameters.AddWithValue("@Step_No", 0); // hoặc throw lỗi tùy logic của bạn
+                return command.ExecuteNonQuery() > 0;
             }
-            catch (Exception ex)
-            {
-                log.Error("Log Save Error: " + ex.Message);
-                result = false;
-            }
-            finally
-            {
-                Close();
-            }
-            return result;
         }
-        public bool SaveToCurrentMonthLog(string serial, string assyPN, string station, string failCode, string processStep, int stepNo)
+        catch (Exception ex)
+        {
+            log.Error("SaveToCurrentMonthLog Error: " + ex.Message);
+            return false;
+        }
+        finally
+        {
+            Close();
+        }
+    }
+
+
+    // Thêm vào đây:
+    public bool SaveToLogMonths_LogTable(string SN, string PN, DateTime dateTime, string Station, string FailCode, string proc, string stepNo, string remark, string wo, string operatorName)
+    {
+        bool result = false;
+        string query = @"
+    INSERT INTO [Production_SZ].[dbo].[Production_Flow_All_Months_Log]
+    (Serial, Assy_PN, Date_Time, Station, FailCode, Process_Step, Step_No, Remark, Work_Order,Operator)
+    VALUES 
+    (@Serial, @Assy_PN, @Date_Time, @Station, @FailCode, @Process_Step, @Step_No, @Remark, @Work_Order,@Operator);";
+
+        try
+        {
+            Open();
+            using (var command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Serial", SN ?? "");
+                command.Parameters.AddWithValue("@Assy_PN", PN ?? "");
+                command.Parameters.AddWithValue("@Date_Time", dateTime);
+                command.Parameters.AddWithValue("@Station", Station ?? "");
+                command.Parameters.AddWithValue("@FailCode", FailCode ?? "");
+                command.Parameters.AddWithValue("@Process_Step", proc ?? "");
+
+                // Chuyển đổi stepNo sang int trước khi thêm
+                if (int.TryParse(stepNo, out int stepNumber))
+                    command.Parameters.AddWithValue("@Step_No", stepNumber);
+                else
+                    command.Parameters.AddWithValue("@Step_No", 0); // hoặc throw lỗi tùy logic của bạn
+                command.Parameters.AddWithValue("@Remark", remark);
+                command.Parameters.AddWithValue("@Work_Order", wo);
+                command.Parameters.AddWithValue("@Operator", operatorName ?? "");
+                command.ExecuteNonQuery();
+            }
+            result = true;
+        }
+        catch (Exception ex)
+        {
+            log.Error("Log Save Error: " + ex.Message);
+            result = false;
+        }
+        finally
+        {
+            Close();
+        }
+        return result;
+    }
+    public bool SaveToCurrentMonthLog(string serial, string assyPN, string station, string failCode, string processStep, int stepNo)
         {
             const string query = @"
         INSERT INTO Production_Flow_Current_Months_Log
@@ -266,5 +329,57 @@ using log4net;
                 Close();
             }
         }
+
+    public bool MoveToMRBLog(string serial, string assyPN, DateTime dateTime, string station, string failCode, string mrbCodes, string process)
+    {
+        bool result = false;
+
+        // Câu lệnh INSERT với các tham số
+        string query = @"
+        INSERT INTO [Production_SZ].[dbo].[Aavid_MRB_Rework_Log_Station]
+               ([Serial]
+               ,[Assy_PN]
+               ,[Date_Time]
+               ,[Station]
+               ,[FailCode]
+               ,[MRB_Codes]
+               ,[Failed_Process])
+         VALUES
+               (@Serial
+               ,@Assy_PN
+               ,@Date_Time
+               ,@Station
+               ,@FailCode
+               ,@MRB_Codes
+               ,@Failed_Process)";
+
+        try
+        {
+            Open();
+            using (var command = new SqlCommand(query, connection))
+            {
+                // Thêm các tham số với giá trị tương ứng
+                command.Parameters.AddWithValue("@Serial", serial);
+                command.Parameters.AddWithValue("@Assy_PN", assyPN);
+                command.Parameters.AddWithValue("@Date_Time", dateTime);
+                command.Parameters.AddWithValue("@Station", station);
+                command.Parameters.AddWithValue("@FailCode", failCode);
+                command.Parameters.AddWithValue("@MRB_Codes", mrbCodes);
+                command.Parameters.AddWithValue("@Failed_Process", process);
+                command.ExecuteNonQuery();
+            }
+            result = true;
+        }
+        catch (SqlException ex)
+        {
+            log.Error("Save data to MRB table Error: " + ex.Message);
+            result = false;
+        }
+        finally
+        {
+            Close();
+        }
+        return result;
     }
+}
 

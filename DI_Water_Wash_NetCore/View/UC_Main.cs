@@ -48,8 +48,16 @@ namespace DI_Water_Wash_NetCore.View
             this.cbb_TestMode.Items.AddRange(Testmodes);
             this.cbb_TestMode.SelectedIndex = 0;
             lblStationID.Text = ClsUnitManagercs.cls_Units[0].StationID;
+            if(ClsDefine.DefineFixture.bAutoScanner)
+                txt_Fixture.Visible = false;
         }
-
+        public void TriggerUpdateToolLife()
+        {
+            for (int i = 0; i < uC_MaintTests.Length; i++)
+            {
+                uC_MaintTests[i].UpdateToolLife(null, EventArgs.Empty);
+            }
+        }
         private void txt_Fixture_TextChanged(object sender, EventArgs e)
         {
             string fixtureText = txt_Fixture.Text.Trim().ToUpper();

@@ -9,12 +9,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Boyd.UIControls" Version="1.0.20260806.60752" />
     <PackageReference Include="log4net" Version="3.3.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="OxyPlot.Core" Version="2.2.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
     <PackageReference Include="System.IO.Ports" Version="10.0.0" />
     <PackageReference Include="System.Management" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="LifeTimeToolCheck">
+      <HintPath>..\..\..\DLL\LifeTimeToolCheck\LifeTimeToolCheck\bin\Debug\net8.0\LifeTimeToolCheck.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
@@ -37,10 +44,37 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-<PropertyGroup>
-    <Version>$([System.DateTime]::Now.ToString("yy.MM.dd.HH"))</Version>
-    <AssemblyVersion>$([System.DateTime]::Now.ToString("yy.MM.dd.HH"))</AssemblyVersion>
-    <FileVersion>$([System.DateTime]::Now.ToString("yy.MM.dd.HH"))</FileVersion>
+	<!-- Khai báo đường dẫn file lưu trữ phiên bản Release -->
+	<PropertyGroup>
+		<LastReleaseVersionFile>$(MSBuildProjectDirectory)\Build\LastReleaseVersion.txt</LastReleaseVersionFile>
+		<AssemblyName>DI_Water_Wash</AssemblyName>
+	</PropertyGroup>
+<!-- Debug builds keep a stable version and never generate a new release version. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <LastReleaseVersion Condition="Exists('$(LastReleaseVersionFile)')">$([System.IO.File]::ReadAllText('$(LastReleaseVersionFile)').Trim())</LastReleaseVersion>
+    <LastReleaseVersion Condition="'$(LastReleaseVersion)' == ''">1.0.0.0</LastReleaseVersion>
+    <Version>$(LastReleaseVersion)</Version>
+    <AssemblyVersion>$(LastReleaseVersion)</AssemblyVersion>
+    <FileVersion>$(LastReleaseVersion)</FileVersion>
+    <InformationalVersion>$(LastReleaseVersion)</InformationalVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
+
+  <!-- Only Release builds generate a new version from the build timestamp. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <GeneratedVersion>$([System.DateTime]::Now.ToString("yy.MM.dd.HHmm"))</GeneratedVersion>
+    <Version>$(GeneratedVersion)</Version>
+    <AssemblyVersion>$(GeneratedVersion)</AssemblyVersion>
+    <FileVersion>$(GeneratedVersion)</FileVersion>
+    <InformationalVersion>$(GeneratedVersion)</InformationalVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+
+  <!-- Persist the generated Release version for later Debug builds. -->
+  <Target Name="PersistReleaseVersion" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+    <MakeDir Directories="$(MSBuildProjectDirectory)\Build" />
+    <WriteLinesToFile File="$(LastReleaseVersionFile)" Lines="$(GeneratedVersion)" Overwrite="true" />
+  </Target>
+
 
 </Project>

@@ -1,4 +1,5 @@
 ﻿using DI_Water_Wash_NetCore.View;
+using LifeTimeToolCheck;
 using log4net;
 using Microsoft.VisualBasic.Logging;
 using System.Diagnostics;
@@ -35,8 +36,8 @@ namespace DI_Water_Wash_NetCore
         private static Mutex _mutex = null;
         private string Password;
         delegate void DelResource();
-        public string[] AssyPN;
-        public string[] WorkOder;
+        public string AssyPN;
+        public string WorkOrder;
         #endregion
         #region Define Log
         private static readonly ILog log = LogManager.GetLogger("InitializeLogger");
@@ -53,6 +54,10 @@ namespace DI_Water_Wash_NetCore
         private UC_Interface _UcInterface;
         private UC_Setting _UcSetting;
         private UC_Parameter _UcParameter;
+        private string _stationId = "ALL";
+        private bool _automaticUpdateStarted;
+        private bool _exitingForAutomaticUpdate;
+        public bool ShouldExitForAutomaticUpdate => _exitingForAutomaticUpdate;
         #endregion
         #endregion
         public FrmMain(string _password)
@@ -116,14 +121,8 @@ namespace DI_Water_Wash_NetCore
                 string[] array = File.ReadAllLines("C:\\Aavid_Test\\Setup-ini\\Flushing_Part_Numbers.txt")
                      .Where(line => !string.IsNullOrWhiteSpace(line))
                      .ToArray();
-                AssyPN = new string[array.Length - 1];
-                WorkOder = new string[array.Length - 1];
-                for (int i = 0; i < AssyPN.Length; i++)
-                {
-                    string[] array2 = array[i + 1].Split(',');
-                    AssyPN[i] = array2[1].Trim();
-                    WorkOder[i] = array2[2].Trim();
-                }
+                AssyPN = array[1].Split(',')[1].Trim();
+                WorkOrder = array[1].Split(',')[2].Trim();
                 string stationID = ClsIO.ReadValue("LOGGING_DATA", "Tester_ID", "", "C:\\Aavid_Test\\Setup-ini\\LCS_Logging_Setup.ini").Trim().Trim('"').Trim('\'');
                 if (stationID == "" || stationID == null || stationID == string.Empty)
                 {
@@ -139,12 +138,25 @@ namespace DI_Water_Wash_NetCore
                         }
                     }
                 }
+                _stationId = stationID;
+
+                // Check while the loading form is still visible, before opening
+                // the part/process dialogs or initializing PLC/ASP hardware.
+                var updateStarted = CheckAndStartAutomaticUpdateAsync().GetAwaiter().GetResult();
+                if (updateStarted == true)
+                {
+                    StateCommon.LoadingText += "Automatic update is starting...\r\n";
+                    StateCommon.bLoading = false;
+                    RequestGracefulExitForAutomaticUpdate();
+                    return;
+                }
                 #region Initialize ASP Control
                 StateCommon.LoadingText += "Config ASP Serial Port...\r\n";
                 log.Debug("Config ASP Serial Port...");
                 Cls_Interface.Initialize();
                 cts = new CancellationTokenSource();
-                _ = Cls_Interface.PollScanAnalog(cts.Token, 1000);
+                _ = Cls_Interface.PollScanAnalog(cts.Token, 100);
+                Cls_ScannerManager.InitialScanner();
                 StateCommon.LoadingText += "Config ASP Serial Port completed\r\n";
                 log.Debug("Config ASP Serial Port completed");
                 StateCommon.LoadingValue = 50;
@@ -153,7 +165,11 @@ namespace DI_Water_Wash_NetCore
                 #endregion
                 StateCommon.LoadingText += "Initial Unit...\r\n";
                 log.Debug("Initial Unit");
-                ClsUnitManagercs.Initialize(AssyPN, WorkOder, this, stationID);
+                ClsUnitManagercs.Initialize(AssyPN, WorkOrder, this, stationID,frmChange.OperatorID);
+                while (!ClsUnitManagercs.IsInitSucess)
+                {
+                    Thread.Sleep(100); // Giải phóng CPU trong lúc chờ
+                }
                 StateCommon.LoadingText += "Check Program Parameter completed\r\n";
                 log.Debug("Check Program Parameter completed");
                 _UcInterface = new UC_Interface();
@@ -170,6 +186,117 @@ namespace DI_Water_Wash_NetCore
                 lb_Ver.Text = "Version: " + version;
             }
         }
+        private async Task<bool> CheckAndStartAutomaticUpdateAsync()
+        {
+            if (_automaticUpdateStarted || IsDisposed)
+                return false;
+
+            // AssyPN and StationId are loaded before this method is called during
+            // the loading phase. Do not require unit initialization here: the
+            // purpose of this early check is to avoid initializing hardware with
+            // an obsolete application.
+            if (string.IsNullOrWhiteSpace(AssyPN))
+            {
+                log.Warn("Automatic update check skipped because station initialization is incomplete.");
+                return false;
+            }
+
+            _automaticUpdateStarted = true;
+            const string appName = "DI_Water_Wash_LCP";
+            const string process = "DI_Water_Wash";
+
+            try
+            {
+                var response = await API.updateVersionService.CheckVersionAsync(new CheckVersionRequest
+                {
+                    AppName = appName,
+                    CurrentVersion = GetInstalledVersion(),
+                    Process = process,
+                    AssyPN = string.IsNullOrWhiteSpace(AssyPN) ? "ALL" : AssyPN,
+                    MachineName = Environment.MachineName,
+                    StationId = string.IsNullOrWhiteSpace(_stationId) ? "ALL" : _stationId,
+                    LineName = "ALL",
+                    InstalledExecutablePath = Application.ExecutablePath
+                });
+
+                if (response is null || !response.UpdateRequired)
+                {
+                    log.Info($"Automatic update check: {response?.Reason ?? "empty_response"}.");
+                    return false;
+                }
+
+                if (!AutoUpdateLauncher.TryStart(
+                        appName,
+                        process,
+                        string.IsNullOrWhiteSpace(AssyPN) ? "ALL" : AssyPN,
+                        Environment.MachineName,
+                        string.IsNullOrWhiteSpace(_stationId) ? "ALL" : _stationId,
+                        "ALL",
+                        Application.ExecutablePath,
+                        out var launchError))
+                {
+                    log.Error($"Automatic update is required ({response.TargetVersion}) but could not start: {launchError}");
+                    if (response.IsMandatory)
+                    {
+                        MessageBox.Show(
+                            $"Có bản cập nhật bắt buộc ({response.TargetVersion}) nhưng không thể khởi động trình cập nhật.\r\n{launchError}",
+                            "Automatic Update",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning);
+                    }
+                    return false;
+                }
+
+                log.Info($"Automatic updater started for target version {response.TargetVersion}.");
+                return true;
+            }
+            catch (OperationCanceledException)
+            {
+                log.Warn("Automatic update check timed out or was cancelled.");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                // Update failure must not prevent the station application from starting.
+                log.Warn("Automatic update check failed; continuing with the current version.", ex);
+                return false;
+            }
+        }
+
+        private void RequestGracefulExitForAutomaticUpdate()
+        {
+            if (_exitingForAutomaticUpdate || IsDisposed)
+                return;
+
+            _exitingForAutomaticUpdate = true;
+            log.Info("Closing PressureDecay gracefully for automatic update.");
+
+            try
+            {
+                cts?.Cancel();
+                Cls_Interface.cls_ASPcontrol?.DisconnectASPSerial();
+            }
+            catch (Exception ex)
+            {
+                // Cleanup failure must not keep PressureDecay.exe alive and block the updater.
+                log.Warn("Hardware cleanup during automatic update exit failed.", ex);
+            }
+
+            if (IsHandleCreated)
+            {
+                BeginInvoke(new Action(() =>
+                {
+                    if (!IsDisposed)
+                        Application.Exit();
+                }));
+            }
+        }
+
+        private static string GetInstalledVersion()
+        {
+            return FileVersionInfo.GetVersionInfo(Application.ExecutablePath).FileVersion
+                ?? Application.ProductVersion;
+        }
 
         #region Function UI 
         private void timer1_Tick(object sender, EventArgs e)
@@ -178,7 +305,7 @@ namespace DI_Water_Wash_NetCore
             this.lb_Date.Text = dtNow.ToString("yyyy-MM-dd HH:mm:ss");
 
         }
-        private void MenuActionChanged(MenuAction action)
+        private async void MenuActionChanged(MenuAction action)
         {
             if (action == MenuAction.EXIT)
             {
@@ -196,13 +323,36 @@ namespace DI_Water_Wash_NetCore
                 return;
             }
             if (action == currentAction) return;
-            if (ClsUnitManagercs.cls_Units[0].clsSequenceTest.TestType != "Engineering Test" && action != MenuAction.MAIN)
+            string pcName = Environment.MachineName;
+            if (pcName != "HAND3W6PN94-1")
             {
-                using (FrmMessage frmMessage = new FrmMessage("Current mode is Production Test\r\nSwitch to Engineer Test and try again!!!", Color.Red, Color.Black))
+                if (action != MenuAction.MAIN)
                 {
-                    frmMessage.ShowDialog();
+                    var passRes = await API.commonFunctionService.GetPasswordAsync("SwitchTab");
+                    string Switchtabpass = (passRes != null && passRes.Success && !string.IsNullOrEmpty(passRes.Password))
+                        ? passRes.Password
+                        : Password;
+                    using (var passwordForm = new Frm_PasswordInput())
+                    {
+                        var result = passwordForm.ShowDialog();
+
+                        if (result == DialogResult.OK)
+                        {
+                            string Inputpassword = passwordForm.EnteredPassword;
+                            if (Inputpassword != Switchtabpass)
+                            {
+                                MessageBox.Show("Sai mật khẩu!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                // Quay lại giá trị cũ
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+
                 }
-                return;
             }
             currentAction = action;
             UpdateLabelMenuAction(currentAction);
@@ -356,6 +506,20 @@ namespace DI_Water_Wash_NetCore
         private void FrmMain_FormClosing(object sender, FormClosingEventArgs e)
         {
 
+        }
+
+        private void lbl_Setting_Click(object sender, EventArgs e)
+        {
+            MenuActionChanged(MenuAction.SETTING);
+        }
+
+        private void lbl_ResetToolLife_Click(object sender, EventArgs e)
+        {
+            using (FrmResetToolLife frmReset = new FrmResetToolLife(ClsUnitManagercs.cls_Units.Length))
+            {
+                frmReset.ShowDialog();
+            }
+            _UcMain.TriggerUpdateToolLife();
         }
     }
 }

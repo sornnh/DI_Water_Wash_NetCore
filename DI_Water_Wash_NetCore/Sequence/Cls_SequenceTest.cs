@@ -1,4 +1,5 @@
-﻿using log4net;
+﻿using LifeTimeToolCheck;
+using log4net;
 using System.Data;
 using System.Diagnostics;
 
@@ -10,14 +11,17 @@ public class Cls_SequenceTest
     public event ProcessLogEventArgs OnRequestAddProcessLogTest;
     public delegate void ProcessLogEventArgs(int SNIndex, System.Data.DataTable LogData);
     public event DelShow_UpdateAnalogValue_Request OnRequestUpdateAnalogValue;
-    public delegate void DelShow_UpdateResult_Request();
+    public delegate void DelShow_UpdateTestMode_Request();
+    public event DelShow_UpdateTestMode_Request OnRequestUpdateTestMode;
+    public delegate void DelShow_UpdateResult_Request(string result );
     public event DelShow_UpdateResult_Request OnRequestUpdateResult;
+    public event EventHandler OnRequestUpdateToolLife;
     #endregion
     #region Enum
     public enum TestSeq
     {
         ABORT = -3,
-        NONE = -2, // Trạng thái không có quá trình nào đang chạy
+        //NONE = -2, // Trạng thái không có quá trình nào đang chạy
         ERROR = -1,
         WAIT = 9999,
         FIXTURE_SCAN = -4,
@@ -64,11 +68,18 @@ public class Cls_SequenceTest
     private double FlowRateMin = 0.0;
     private double FlowRateCurrentMax = 0.0;
     private double FlowRateCurrentMin = 0.0;
-    public int iQDTimeused { get; private set; }
+    //public int iQDTimeused { get; private set; }
     public double FlowRate { get; private set; }
     public double AirPressure { get; private set; }
     public double WaterPressure { get; private set; }
     private bool _bTestAbort = false;
+
+    public int iInputStart { get; private set; }
+
+    private int _iRetryTrigger = 0;
+    private int _iRetryTriggerMax = 3;
+
+
     public bool bTestAbort
     {
         get
@@ -97,16 +108,28 @@ public class Cls_SequenceTest
     public Stopwatch sw_Showpass = new Stopwatch();
     public Stopwatch sw_Showfail = new Stopwatch();
     private bool _isTestResultShown = false;
-    private static readonly ILog log = LogManager.GetLogger(typeof(Cls_SequenceTest));
-    public string TestResult { get; private set; } = "N/A";
-    Cls_DBMsSQL ProductionDB = new Cls_DBMsSQL();
+    protected static readonly ILog log = LogManager.GetLogger("SequenceTestLogger");
+    public ToolLifeCheck checkQD;
+    private string _testResult;
+    public string TestResult
+    {
+        get => _testResult;
+        private set
+        {
+            if (_testResult != value)
+            {
+                _testResult = value;
+                OnRequestUpdateResult(value); // or OnRequestUpdateResult(_testResult);
+            }
+        }
+    }
     private bool _bGetAnalogValue = false;
     private bool _bGetFlowRate = false;
     private bool _bGetAirPressure = false;
     private bool _bGetWaterPressure = false;
     private string _SN = "";
     private bool AccessInsertSN = false;
-    private TestSeq _testSeq = TestSeq.NONE;
+    private TestSeq _testSeq = TestSeq.WAIT;
     public TestSeq testSeq
     {
         get
@@ -183,6 +206,8 @@ public class Cls_SequenceTest
         }
     }
 
+    public Action<string> OnRequestUpdateSN;
+
     #endregion
 
     public Cls_SequenceTest(int Index, Form mainForm)
@@ -201,6 +226,7 @@ public class Cls_SequenceTest
                 iADCWaterPressure = 1;
                 iADCAirFlow = 5;
                 slaveID = 1;
+                iInputStart = 0;
                 break;
             case 1:
                 iRelay3Way_Air_Water = 2;
@@ -211,6 +237,7 @@ public class Cls_SequenceTest
                 iADCWaterPressure = 2;
                 iADCAirFlow = 6;
                 slaveID = 2;
+                iInputStart = 1;
                 break;
             case 2:
                 iRelay3Way_Air_Water = 3;
@@ -221,6 +248,7 @@ public class Cls_SequenceTest
                 iADCWaterPressure = 3;
                 iADCAirFlow = 7;
                 slaveID = 3;
+                iInputStart = 2;
                 break;
             case 3:
                 iRelay3Way_Air_Water = 4;
@@ -231,6 +259,7 @@ public class Cls_SequenceTest
                 iADCWaterPressure = 4;
                 iADCAirFlow = 8;
                 slaveID = 4;
+                iInputStart = 3;
                 break;
         }
         switch (Index)
@@ -261,15 +290,18 @@ public class Cls_SequenceTest
         sw_reverse_drying = new Stopwatch();
 
         _testSeq = TestSeq.WAIT;
-        ProductionDB.Initialize("10.102.4.20", "Production_SZ", "readuser", "Boyd@2025");
-        ProductionDB.Open();
-        var logqd = LifeTimeLogManager.LoadLog(ClsDefine.DefineSystem.sQDlogpath);
-        iQDTimeused = logqd != null ? logqd.TimeUsed : 0;
+        
         Thread thread = new Thread(LoopGetAnalogValue);
         thread.IsBackground = true;
         thread.Name = "ThrGetFlowRate" + Index;
         thread.Start();
     }
+    public async Task InitializeAsync()
+    {
+        // 1. Khởi tạo QD & Oring
+        checkQD = await ToolLifeCheck.CreateAsync(StateCommon.Secsion.ToString(), ClsUnitManagercs.AssyPN, ToolLifeCheck.ToolName.QD,iIndex);
+    }
+
     private void GetDefineforSensor()
     {
         Air_PressureMax = double.Parse(ClsIO.ReadValue("Air_Pressure", "Air_Pressure_Max", "1", $"C:\\Aavid_Test\\Setup-ini\\AnalogSensorConfiguration_{iIndex}.ini"));
@@ -732,176 +764,18 @@ public class Cls_SequenceTest
         // Lấy tất cả phần tử từ 0 đến index - 1
         return proclist.Take(index).ToArray();
     }
-    public bool[] GetResultprocessBefore(string[] proccheck)
+    public int IsInProcess(string proc, string AssyPN, string sSN, ref DataTable dtResult, out string message)
     {
-        bool[] result = new bool[proccheck.Length];
-        for (int i = 0; i < proccheck.Length; i++)
-        {
-            string TableName = "";
-            string SummaryTableName = "";
-            StateCommon.GetTableName(proccheck[i], out TableName, out SummaryTableName);
-            string query;
-            if (TableName.Contains("Production_Flow_"))
-            {
-                query = $"SELECT [Serial],[Assy_PN],[Date_Time],[Station],[FailCode] " +
-                $"FROM [Production_SZ].[dbo].[{TableName}] where [Serial] ='{_SN}' and [Process_Step] = '{proccheck[i]}' order by Date_Time";
-            }
-            else
-                query = $"SELECT [Serial],[Assy_PN],[Date_Time],[Station],[FailCode] " +
-                $"FROM [Production_SZ].[dbo].[{TableName}] where [Serial] ='{_SN}' order by Date_Time";
-            System.Data.DataTable dt = ProductionDB.ExecuteQuery(query);
-            if (dt != null && dt.Rows.Count > 0)
-            {
-                foreach (DataRow row in dt.Rows)
-                {
-                    string failCode = row["FailCode"]?.ToString().Trim().ToUpper();
-                    if (failCode.Trim().ToUpper() == "OK" || failCode.Trim().ToUpper() == "PASS")
-                    {
-                        result[i] = true; // Có ít nhất 1 dòng OK
-                        break;
-                    }
-                    else
-                        result[i] = false; // Nếu có dòng nào không PASS hoặc OK, thì không phải trong quá trình này
-                }
-            }
-            else
-            {
-                result[i] = false; // Không có dữ liệu, coi như không thành công
-            }
-        }
-        return result;
-    }
-    public System.Data.DataTable GetProcessResultsTable(string[] processList, string sSN)
-    {
-        System.Data.DataTable dtResult = new System.Data.DataTable();
-        dtResult.Columns.Add("ProcessName", typeof(string));
-        dtResult.Columns.Add("Result", typeof(bool));
-        foreach (string p in processList)
-        {
-            string tableName = "", summaryTable = "";
-            int StepCheck = 0;
-            string processGet = p;
-            for (int i = 0; i < 10; i++)
-            {
-                if (p.EndsWith($"-{i.ToString()}"))
-                {
-                    StepCheck = i;
-                    processGet = p.Replace($"-{i.ToString()}", "");
-                    break;
-                }
-            }
-            StateCommon.GetTableName(processGet, out tableName, out summaryTable);
-            string query;
-            if (tableName.Contains("Production_Flow_"))
-            {
-                if (StepCheck == 0)
-                {
-                    query = $"SELECT [FailCode],[Date_Time] FROM [Production_SZ].[dbo].[{tableName}] WHERE [Serial] = '{sSN}' and [Process_Step] = '{p}'";
-                }
-                else
-                {
-                    query = $"SELECT [FailCode],[Date_Time] FROM [Production_SZ].[dbo].[{tableName}] WHERE [Serial] = '{sSN}' and [Process_Step] = '{p}' and [Step_No] ='{StepCheck}'";
-                }
-            }
-            else
-            {
-                if (StepCheck == 0)
-                    query = $"SELECT [FailCode],[Date_Time] FROM [Production_SZ].[dbo].[{tableName}] WHERE [Serial] = '{sSN}'";
-                else
-                    query = $"SELECT [FailCode],[Date_Time] FROM [Production_SZ].[dbo].[{tableName}] WHERE [Serial] = '{sSN}' and [Step_No] ='{StepCheck}'";
-            }
-            DataTable dt = ProductionDB.ExecuteQuery(query);
+        string wo = ClsUnitManagercs.cls_Units != null && iIndex >= 0 && iIndex < ClsUnitManagercs.cls_Units.Length
+            ? ClsUnitManagercs.cls_Units[iIndex]?.WO ?? ""
+            : "";
 
-            bool isPass = false;
-
-            if (dt != null && dt.Rows.Count > 0)
-            {
-                foreach (DataRow row in dt.Rows)
-                {
-                    string failCode = row["FailCode"]?.ToString().Trim().ToUpper();
-                    if (failCode == "PASS" || failCode == "OK")
-                    {
-                        isPass = true;
-                        break;
-                    }
-                    else
-                        isPass = false;
-                }
-            }
-            dtResult.Rows.Add(p, isPass);
-        }
-        return dtResult;
-    }
-    public int IsInProcess(string proc, string sSN, ref DataTable dtResult)
-    {
-        if (ClsUnitManagercs.cls_Units[iIndex].bVerify_SN_in_WO)
-        {
-            int iSNindexWO = int.Parse(sSN.Substring(ClsUnitManagercs.cls_Units[iIndex].iSNin_WO_Ctl_String_Offset, ClsUnitManagercs.cls_Units[iIndex].iSNin_WO_Ctl_String_Length));
-            if (iSNindexWO < ClsUnitManagercs.cls_Units[iIndex].iFirst_SN_in_WO || iSNindexWO > ClsUnitManagercs.cls_Units[iIndex].iLast_SN_in_WO)
-            {
-                return 7;
-            }
-        }
-        string[] proceslist = ClsUnitManagercs.cls_Units[iIndex].verifyFlags;
-        string AssyPN = ClsUnitManagercs.cls_Units[iIndex].AssyPN;
-        if (proceslist == null || proceslist.Length == 0)
-        {
-            return 1;
-        }
-        // Tìm vị trí process trong danh sách
-        int procIndex = Array.IndexOf(proceslist, proc);
-        if (procIndex == -1)
-            return 2; // Không có trong danh sách verifyFlags
-                      // Lấy các process đứng trước
-        string[] processesBefore = GetProcessBefore(proceslist, proc);
-        // Kiểm tra kết quả PASS/OK của các process trước đó
-        bool[] resultBefore = GetResultprocessBefore(processesBefore);
-        //get table tested
-        dtResult = GetProcessResultsTable(proceslist, sSN);
-        // Nếu có bất kỳ kết quả nào là false => return false
-        if (resultBefore.Any(r => !r))
-            return 3;
-        //Check passed this station
-        bool[] resultcurrent = GetResultprocessBefore(new string[1] { proc });
-        if (resultcurrent[0])
-            return 4;
-        //Check MRB
-        if (!GetMRBRecord(sSN))
-            return 5;
-        if (ClsUnitManagercs.cls_Units[iIndex].Verify_Linked_Part)
-        {
-            bool linkpart = GetLinkPartRecord(sSN, AssyPN);
-            if (!linkpart) return 6;
-        }
-        return 0; // Tất cả các process trước đó đều PASS/OK
-    }
-    public bool GetLinkPartRecord(string sn, string AssyPN)
-    {
-        string query = $"SELECT * FROM [Production_SZ].[dbo].[LCS_LCP_Serial_Numbers_Link] where Serial = '{sn}' and Assy_PN ={AssyPN}";
-        System.Data.DataTable dt = ProductionDB.ExecuteQuery(query);
-        if (dt != null && dt.Rows.Count > 0)
-        {
-            return true;
-        }
-        else
-            return false;
-    }
-    public bool GetMRBRecord(string sn)
-    {
-        string query = $"SELECT * FROM [Production_SZ].[dbo].[Aavid_MRB_Rework_Log_Station] where Serial ='{sn}'";
-        System.Data.DataTable dt = ProductionDB.ExecuteQuery(query);
-        if (dt != null && dt.Rows.Count > 0)
-        {
-            DataRow row = dt.Rows[dt.Rows.Count - 1];
-            string failCode = row["FailCode"]?.ToString().Trim().ToUpper();
-            if (failCode.Trim().ToUpper() == "OK" || failCode.Trim().ToUpper() == "PASS")
-            {
-                return true;
-            }
-            else
-                return false;
-        }
-        else return true;
+        var task = Task.Run(() => API.processService.CheckProcessAsync(AssyPN, sSN, wo, proc, iIndex));
+        var res = task.GetAwaiter().GetResult();
+        message = res?.Message ?? "No response from process service.";
+        if (res == null) return -1;
+        if (res.Success) return 0;
+        return res.Code > 0 ? res.Code : -1;
     }
     private string GetProcesCodeError(int iCode)
     {
@@ -948,301 +822,293 @@ public class Cls_SequenceTest
     #endregion
 
     #region Log to DB
-    private DateTime GetDateTimefromDB()
+    public bool SavetoDBMonths_Log(string SN, string PN, string StationID, string FailCode, string proc, string step, string rm, string wo)
     {
-        DateTime serverTime;
-        try
+        int stepNo = 0;
+        int.TryParse(step, out stepNo);
+
+        var request = new APIchecklistProcess.Model.RecordProcessResultRequest
         {
-            string query = "SELECT CURRENT_TIMESTAMP";
-            object result = ProductionDB.ExecuteScalar(query);
-            if (result != null && result is DateTime)
-            {
-                serverTime = (DateTime)result;
-            }
-            else
-            {
-                serverTime = DateTime.Now;
-            }
-        }
-        catch (Exception)
-        {
-            serverTime = DateTime.Now;
-        }
-        return serverTime;
-    }
-    public bool SavetoDBMonths_Log(string SN, string PN, string StationID, string FailCode, string proc, string step)
-    {
-        DateTime dt = GetDateTimefromDB();
-        bool b = ProductionDB.SaveToLogMonths_LogTable(SN, PN, dt, StationID, FailCode, proc, step);
-        return b;
+            SerialNumber = SN,
+            AssyPN = PN,
+            WorkOrder = wo,
+            ProcessStep = proc,
+            StepNo = stepNo,
+            FailCode = string.IsNullOrWhiteSpace(FailCode) ? "ABORT" : FailCode,
+            Station = StationID,
+            Remark = rm
+        };
+
+        var task = Task.Run(() => API.processService.RecordProcessResultAsync(request));
+        var res = task.GetAwaiter().GetResult();
+        return res != null && res.Success;
     }
     public bool SaveToDBDIWaterWashLog(string SN, string PN, string wo, string StationID, string FailCode, int step, float flowrate, float waterpressure, float airpressure)
     {
-        DateTime dt = GetDateTimefromDB();
-        bool b = ProductionDB.SaveToDIWaterWashLog(SN, PN, StationID, FailCode, "", _TestType, wo, step, iIndex + 1, flowrate, waterpressure, airpressure);
-        return b;
+        //command.Parameters.AddWithValue("@Fixture_No", Fixture_No);
+        //command.Parameters.AddWithValue("@Water_Flow_Rate", Flowrate);
+        //command.Parameters.AddWithValue("@Water_Pressure", Waterpressure);
+        //command.Parameters.AddWithValue("@Air_Pressure", Airpressure);
+        int iStep = 0;
+        var extra = new Dictionary<string, object>
+        {
+            { "Fixture_No", (iIndex + 1).ToString() },
+            { "Water_Flow_Rate", flowrate },
+            { "Water_Pressure", waterpressure },
+            { "Air_Pressure", airpressure }
+        };
+        var request = new APIchecklistProcess.Model.RecordProcessResultRequest
+        {
+            SerialNumber = SN,
+            AssyPN = PN,
+            WorkOrder = wo,
+            ProcessStep = StateCommon.Secsion.ToString(),
+            StepNo = iStep,
+            FailCode = string.IsNullOrWhiteSpace(FailCode) ? "PASS" : FailCode,
+            Operator = ClsUnitManagercs.cls_Units[iIndex].OperatorID,
+            Station = StationID,
+            Remark = _TestType,
+            ExtraData = extra
+        };
+
+        var task = Task.Run(() => API.processService.RecordProcessResultAsync(request));
+        var res = task.GetAwaiter().GetResult();
+        return res != null && res.Success;
     }
     #endregion
-    public async void LoopTest()
+    private volatile bool _isDialogShowing = false;
+    private void ShowErrorBlocking(string message)
+    {
+        if (_isDialogShowing) return;
+        _isDialogShowing = true;
+        _mainForm.Invoke(new Action(() =>
+        {
+            try
+            {
+                new FrmMessageError(message, Color.Red, Color.Black, 30000)
+                {
+                    StartPosition = FormStartPosition.CenterScreen
+                }.ShowDialog(_mainForm);
+            }
+            finally { _isDialogShowing = false; }
+        }));
+    }
+    private readonly SemaphoreSlim _loopLock = new SemaphoreSlim(1, 1);
+    public async Task LoopTest()
     {
 
         if (!StateCommon.bAuto)
         {
             return;
         }
-        if (_bTestAbort)
+        if (_isDialogShowing) return;
+        // Nếu lần trước chưa xong → bỏ qua lần này
+        if (!_loopLock.Wait(0)) return;
+        try
         {
-            _testSeq = TestSeq.ABORT;
-            _bTestAbort = false;
-        }
-        if (_testSeq == TestSeq.ERROR)
-        {
-            sw_drying.Stop();
-            sw_flush.Stop();
-            sw_prewash.Stop();
-            sw_reverse.Stop();
-            sw_reverse_drying.Stop();
-            _bGetAnalogValue = false;
-            _bGetAirPressure = false;
-            _bGetWaterPressure = false;
-            _bGetFlowRate = false;
-            _testSeq = TestSeq.END;
-            _SN = "";
-            return;
-        }
-        if (_testSeq == TestSeq.WAIT)
-        {
-            _SN = "";
-            return;
-        }
-        
-        switch (_testSeq)
-        {
-            case TestSeq.ABORT:
-                _testSeq = TestSeq.NONE;
-                await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelayPump, 0);
-                await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Air_Water, 0);
-                await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Reverse, 0);
-                TestResult = "ABORT";
-                ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.Error;
+            if (_bTestAbort)
+            {
+                _testSeq = TestSeq.ABORT;
+                _bTestAbort = false;
+            }
+            if (_testSeq == TestSeq.ERROR)
+            {
+                sw_drying.Stop();
+                sw_flush.Stop();
+                sw_prewash.Stop();
+                sw_reverse.Stop();
+                sw_reverse_drying.Stop();
+                _bGetAnalogValue = false;
+                _bGetAirPressure = false;
+                _bGetWaterPressure = false;
+                _bGetFlowRate = false;
                 _testSeq = TestSeq.END;
-                break;
-            case TestSeq.FIXTURE_SCAN:
-                _testSeq = TestSeq.NONE;
-                var result1 = DialogResult.None;
-                _mainForm.Invoke(new Action(() =>
-                {
-                    var dialog = new FrmScanQRCable(iIndex+1, ClsUnitManagercs.cls_Units[iIndex].iQDLifeTime, ClsUnitManagercs.cls_Units[iIndex].StationID);
-                    dialog.StartPosition = FormStartPosition.CenterScreen; // ✅ hiện giữa màn hình
-                    result1 = dialog.ShowDialog(_mainForm);   // hoặc ShowDialog(_mainForm)
-                    if (result1 == DialogResult.OK)
+                _SN = "";
+                return;
+            }
+
+            switch (_testSeq)
+            {
+                case TestSeq.WAIT:
+                    _SN = "";
+                    if (ClsDefine.DefineFixture.bAutoScanner && Cls_Interface.cls_ASPcontrol.inputStates[iInputStart])
+                    {
+                        if (checkQD.GetTimeUsed(0) > checkQD.iLifeTimeLimit)
+                        {
+
+                            ShowErrorBlocking($"Fixture 1 cần được thay thế QD!!!");
+                            log.Warn((object)("Fixture 1 cần được thay thế QD!!!."));
+                            _testSeq = TestSeq.ERROR;
+                            return;
+                        }
+                        else
+                        {
+                            checkQD.CheckLifeTimeLocal(0);
+                        }
+                        _iRetryTrigger = 0;
+                        _testSeq = TestSeq.SN_INSERT;
+                    }
+                    break;
+                case TestSeq.ABORT:
+                    await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelayPump, 0);
+                    await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Air_Water, 0);
+                    await Cls_Interface.cls_ASPcontrol.SetRelayONOFFAsyncCheckResult(iRelay3Way_Reverse, 0);
+                    TestResult = "ABORT";
+                    ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.Error;
+                    _testSeq = TestSeq.END;
+                    break;
+                case TestSeq.FIXTURE_SCAN:
+                    if(!checkQD.isActiveCheck)
                         _testSeq = TestSeq.FIXTURE_SCAN_OK;
                     else
-                        _testSeq = TestSeq.FIXTURE_SCAN_NG;
-                }));
-                break;
-            case TestSeq.FIXTURE_SCAN_NG:
-                _testSeq = TestSeq.ERROR;
-                break;
-            case TestSeq.FIXTURE_SCAN_OK:
-                var logqd = LifeTimeLogManager.LoadLog(ClsDefine.DefineSystem.sQDlogpath);
-                iQDTimeused = logqd != null ? logqd.TimeUsed : 0;
-                _testSeq = TestSeq.SN_INSERT;
-                break;
-            case TestSeq.SN_INSERT:
-                {
-                    int num = 10000;
-                    int num2 = 0;
-                    int num3 = 100;
-                    AccessInsertSN = true;
-                    while (string.IsNullOrWhiteSpace(_SN) && num2 < num)
                     {
-                        Thread.Sleep(num3);
-                        num2 += num3;
-                    }
-                    if (string.IsNullOrWhiteSpace(_SN))
-                    {
-                        log.Warn((object)"Timeout: No SN entered within 5 seconds.");
-                        _testSeq = TestSeq.WAIT;
-                    }
-                    else
-                    {
-                        log.Info((object)("SN received: " + _SN));
-                        _testSeq = TestSeq.SN_VERIFY;
-                    }
-                    AccessInsertSN = false;
+                        var result1 = DialogResult.None;
+                        _mainForm.Invoke(new Action(() =>
+                        {
+                            var dialog = new FrmScanQRCable(iIndex, 0, ClsUnitManagercs.cls_Units[iIndex].StationID);
+                            dialog.StartPosition = FormStartPosition.CenterScreen; // ✅ hiện giữa màn hình
+                            result1 = dialog.ShowDialog(_mainForm);   // hoặc ShowDialog(_mainForm)
+                            if (result1 == DialogResult.OK)
+                                _testSeq = TestSeq.FIXTURE_SCAN_OK;
+                            else
+                                _testSeq = TestSeq.FIXTURE_SCAN_NG;
+                        }));
+                    }    
                     break;
-                }
-            case TestSeq.SN_VERIFY:
-                if (TestType != "Engineering Test")
-                {
-                    if (IsSNValidFormat(_SN))
+                case TestSeq.FIXTURE_SCAN_NG:
+                    _testSeq = TestSeq.ERROR;
+                    break;
+                case TestSeq.FIXTURE_SCAN_OK:
+                    _testSeq = TestSeq.SN_INSERT;
+                    break;
+                case TestSeq.SN_INSERT:
+                    OnRequestUpdateToolLife?.Invoke(this, EventArgs.Empty);
+                    if (ClsDefine.DefineFixture.bAutoScanner)
                     {
-                        log.Info((object)("SN " + _SN + " is valid."));
-                        _testSeq = TestSeq.SN_CHECK_ROUTER;
+                        var result = await Cls_ScannerManager.Scanner[iIndex].TriggerAndReadAsync();
+                        if (result.isOK)
+                        {
+                            _SN = result.sCode ?? "";
+                            OnRequestUpdateSN?.Invoke(_SN);
+                            _testSeq = TestSeq.SN_VERIFY;
+                        }
+                        else
+                        {
+                            _iRetryTrigger++;
+                            if (_iRetryTrigger < _iRetryTriggerMax)
+                                _testSeq = TestSeq.SN_INSERT;
+                            else
+                            {
+                                // gọi mở form phụ trên UI thread
+                                ShowErrorBlocking($"Scanner {iIndex + 1} can not scan. Please re-enter.");
+                                log.Warn((object)($"Scanner {iIndex + 1} can not scan. Please re-enter."));
+                                _testSeq = TestSeq.WAIT;
+                            }
+                        }
                     }
                     else
                     {
-                        // gọi mở form phụ trên UI thread
-                        _mainForm.Invoke(new Action(() =>
+                        int num = 10000;
+                        int num2 = 0;
+                        int num3 = 100;
+                        AccessInsertSN = true;
+                        while (string.IsNullOrWhiteSpace(_SN) && num2 < num)
                         {
-                            var dialog = new FrmMessageError(_SN + " is invalid. Please re-enter.", Color.Red, Color.Black);
-                            dialog.StartPosition = FormStartPosition.CenterScreen; // ✅ hiện giữa màn hình
-                            dialog.ShowDialog(_mainForm);   // hoặc ShowDialog(_mainForm)
-                            dialog.BringToFront();
-                        }));
-                        log.Warn((object)("SN " + _SN + " is invalid. Please re-enter."));
-                        _testSeq = TestSeq.WAIT;
+                            Thread.Sleep(num3);
+                            num2 += num3;
+                        }
+                        if (string.IsNullOrWhiteSpace(_SN))
+                        {
+                            log.Warn((object)"Timeout: No SN entered within 5 seconds.");
+                            _testSeq = TestSeq.WAIT;
+                        }
+                        else
+                        {
+                            log.Info((object)("SN received: " + _SN));
+                            _testSeq = TestSeq.SN_VERIFY;
+                        }
+                        AccessInsertSN = false;
                     }
-                }
-                else
+                    break;
+                case TestSeq.SN_VERIFY:
                     _testSeq = TestSeq.SN_CHECK_ROUTER;
-                break;
-            case TestSeq.SN_CHECK_ROUTER:
-                if (TestType != "Engineering Test")
-                {
-                    DataTable dtResult = new DataTable();
-                    int iCheckRouter = IsInProcess("DI_Water_Wash", _SN, ref dtResult);
-                    AddProcessLogTest(dtResult);
-                    if (iCheckRouter == 0) _testSeq = TestSeq.SN_CHECK_ROUTER_OK;
-                    else
+                    break;
+                case TestSeq.SN_CHECK_ROUTER:
+                    if (TestType != "Engineering Test" && TestType != "Golden Sample Test")
                     {
-                        // gọi mở form phụ trên UI thread
-                        _mainForm.Invoke(new Action(() =>
+                        DataTable dtResult = new DataTable();
+                        int iCheckRouter = IsInProcess(StateCommon.Secsion.ToString(),ClsUnitManagercs.AssyPN, _SN, ref dtResult, out string mess);
+                        AddProcessLogTest(dtResult);
+                        if (iCheckRouter == 0)
+                            _testSeq = TestSeq.SN_CHECK_ROUTER_OK;
+                        else
                         {
-                            var dialog = new FrmMessageError("SN " + _SN + " " + GetProcesCodeError(iCheckRouter), Color.Red, Color.Black);
-                            dialog.StartPosition = FormStartPosition.CenterScreen; // ✅ hiện giữa màn hình
-                            dialog.Show(_mainForm);   // hoặc ShowDialog(_mainForm)
-                            dialog.BringToFront();
-                        }));
-                        log.Warn((object)GetProcesCodeError(iCheckRouter) + _SN);
-                        _testSeq = TestSeq.WAIT;
+                            ShowErrorBlocking(mess);
+                            log.Warn((object)GetProcesCodeError(iCheckRouter) + _SN);
+                            _testSeq = TestSeq.WAIT;
+                        }
                     }
-                }
-                else
-                    _testSeq = TestSeq.SN_CHECK_ROUTER_OK;
-                break;
-            case TestSeq.SN_CHECK_ROUTER_OK:
-                ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.Running;
-                _StepTesting = 0;
-                _testSeq = TestSeq.SETTING_PUMP;
-                break;
-            case TestSeq.SETTING_PUMP:
-                bool bResult = await Setting_Pump2Test(5);
-                if (bResult)
-                {
-                    log.Info((object)$"Pump and relays set successfully for SN {_SN}.");
-                    _testSeq = TestSeq.TURN_FLUSHING_WASHING;
-                }
-                else
-                {
-                    log.Error((object)$"Failed to set pump and relays for SN {_SN}.");
-                    //MessageBox.Show($"Failed to set pump and relays for SN {_SN}.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-                    ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.Error;
-                    _testSeq = TestSeq.ERROR;
-                }
-                break;
-            case TestSeq.TURN_FLUSHING_WASHING:
-                bool bFlushing = await Setting_FlushingWash(5);
-                if (bFlushing)
-                {
-                    log.Info((object)$"flushing relay set successfully for SN {_SN}.");
-                    _testSeq = TestSeq.PRE_WASHING;
-                }
-                else
-                {
-                    log.Error((object)$"Failed to flushing relay set for SN {_SN}.");
-                    //MessageBox.Show($"Failed to flushing relay set for SN {_SN}.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-                    
-                    _testSeq = TestSeq.ERROR;
-                    ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.Error;
-                }
-                break;
-            case TestSeq.PRE_WASHING:
-                sw_prewash = new Stopwatch();
-                sw_prewash.Start();
-                while (sw_prewash.ElapsedMilliseconds < ClsUnitManagercs.cls_Units[iIndex].iPre_Washing_Time * 1000)
-                {
-                    if (ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process == Cls_SequenceCommon.SequenceState.Error)
+                    else if (TestType == "Golden Sample Test")
                     {
-                        log.Error((object)$"Process error during testing for SN {_SN}.");
-                        _testSeq = TestSeq.ERROR;
-                        return;
+                        var goldenlimit = API.goldenService.GetGoldenTestLimit(
+                               ClsUnitManagercs.cls_Units[iIndex].AssyPN, _SN, StateCommon.Secsion.ToString());
+                        if (goldenlimit.Result.Success)
+                            _testSeq = TestSeq.SN_CHECK_ROUTER_OK;
+                        else
+                        {
+                            ShowErrorBlocking(goldenlimit.Result.Message);
+                            _SN = "";
+                            _testSeq = TestSeq.WAIT;
+                        }
                     }
-                    if(_bTestAbort)
+                    else
+                        _testSeq = TestSeq.SN_CHECK_ROUTER_OK;
+                    break;
+                case TestSeq.SN_CHECK_ROUTER_OK:
+                    TestResult = "RUNNING";
+                    ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.Running;
+                    _StepTesting = 0;
+                    _testSeq = TestSeq.SETTING_PUMP;
+                    break;
+                case TestSeq.SETTING_PUMP:
+                    bool bResult = await Setting_Pump2Test(5);
+                    if (bResult)
                     {
-                        log.Error((object)$"Process abort during testing for SN {_SN}.");
-                        _testSeq = TestSeq.ABORT;
-                        return;
-                    }    
-                    Thread.Sleep(1000);
-                }
-                sw_prewash.Reset();
-                _testSeq = TestSeq.FLUSHING_WASHING;
-                break;
-            case TestSeq.FLUSHING_WASHING:
-                sw_flush = new Stopwatch();
-                sw_flush.Start();
-                _bGetFlowRate = true;
-                _bGetWaterPressure = true;
-                while (sw_flush.ElapsedMilliseconds < ClsUnitManagercs.cls_Units[iIndex].iWashing_Time * 1000)
-                {
-                    if (ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process == Cls_SequenceCommon.SequenceState.Error)
-                    {
-                        log.Error((object)$"Process error during testing for SN {_SN}.");
-                        
-                        _testSeq = TestSeq.ERROR;
-                        return;
-                    }
-                    if (_bTestAbort)
-                    {
-                        log.Error((object)$"Process abort during testing for SN {_SN}.");
-                        _testSeq = TestSeq.ABORT;
-                        return;
-                    }
-                    Thread.Sleep(1000);
-                    if(sw_flush.Elapsed.TotalSeconds > ClsDefine.DefineTesting.Time2stable)
-                    {
-                        ListFlowRates.Add(FlowRate);
-                        ListWaterPressures.Add(WaterPressure);
-                    }    
-                }
-                sw_flush.Reset();
-                _testSeq = TestSeq.TURN_REVERSE_WASHING;
-                break;
-            case TestSeq.TURN_REVERSE_WASHING:
-                if (ClsUnitManagercs.cls_Units[iIndex].bReverse_Washing_Flow)
-                {
-                    bool bReverse = await Setting_FlushingReverse(5);
-                    if (bReverse)
-                    {
-                        log.Info((object)$"Reverse relay set successfully for SN {_SN}.");
-                        _testSeq = TestSeq.REVERSE_WASHING;
+                        log.Info((object)$"Pump and relays set successfully for SN {_SN}.");
+                        _testSeq = TestSeq.TURN_FLUSHING_WASHING;
                     }
                     else
                     {
-                        log.Error((object)$"Failed to Reverse relay set for SN {_SN}.");
-                        //MessageBox.Show($"Failed to Reverse relay set for SN {_SN}.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-                      
+                        log.Error((object)$"Failed to set pump and relays for SN {_SN}.");
+                        //MessageBox.Show($"Failed to set pump and relays for SN {_SN}.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                        ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.Error;
+                        _testSeq = TestSeq.ERROR;
+                    }
+                    break;
+                case TestSeq.TURN_FLUSHING_WASHING:
+                    bool bFlushing = await Setting_FlushingWash(5);
+                    if (bFlushing)
+                    {
+                        log.Info((object)$"flushing relay set successfully for SN {_SN}.");
+                        _testSeq = TestSeq.PRE_WASHING;
+                    }
+                    else
+                    {
+                        log.Error((object)$"Failed to flushing relay set for SN {_SN}.");
+                        //MessageBox.Show($"Failed to flushing relay set for SN {_SN}.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+
                         _testSeq = TestSeq.ERROR;
                         ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.Error;
                     }
-                }
-                else
-                    _testSeq = TestSeq.REVERSE_WASHING;
-                break;
-            case TestSeq.REVERSE_WASHING:
-                _StepTesting++;
-                if (ClsUnitManagercs.cls_Units[iIndex].bReverse_Washing_Flow)
-                {
-                    sw_reverse = new Stopwatch();
-                    sw_reverse.Start();
-                    while (sw_reverse.ElapsedMilliseconds < ClsUnitManagercs.cls_Units[iIndex].iDI_Reverse_Washing_Time * 1000)
+                    break;
+                case TestSeq.PRE_WASHING:
+                    sw_prewash = new Stopwatch();
+                    sw_prewash.Start();
+                    while (sw_prewash.ElapsedMilliseconds < ClsUnitManagercs.cls_Units[iIndex].iPre_Washing_Time * 1000)
                     {
                         if (ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process == Cls_SequenceCommon.SequenceState.Error)
                         {
                             log.Error((object)$"Process error during testing for SN {_SN}.");
-                            
                             _testSeq = TestSeq.ERROR;
                             return;
                         }
@@ -1253,102 +1119,128 @@ public class Cls_SequenceTest
                             return;
                         }
                         Thread.Sleep(1000);
-                        if (sw_reverse.Elapsed.TotalSeconds > ClsDefine.DefineTesting.Time2stable)
+                    }
+                    sw_prewash.Reset();
+                    _testSeq = TestSeq.FLUSHING_WASHING;
+                    break;
+                case TestSeq.FLUSHING_WASHING:
+                    sw_flush = new Stopwatch();
+                    sw_flush.Start();
+                    _bGetFlowRate = true;
+                    _bGetWaterPressure = true;
+                    while (sw_flush.ElapsedMilliseconds < ClsUnitManagercs.cls_Units[iIndex].iWashing_Time * 1000)
+                    {
+                        if (ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process == Cls_SequenceCommon.SequenceState.Error)
+                        {
+                            log.Error((object)$"Process error during testing for SN {_SN}.");
+
+                            _testSeq = TestSeq.ERROR;
+                            return;
+                        }
+                        if (_bTestAbort)
+                        {
+                            log.Error((object)$"Process abort during testing for SN {_SN}.");
+                            _testSeq = TestSeq.ABORT;
+                            return;
+                        }
+                        Thread.Sleep(1000);
+                        if (sw_flush.Elapsed.TotalSeconds > ClsDefine.DefineTesting.Time2stable)
                         {
                             ListFlowRates.Add(FlowRate);
                             ListWaterPressures.Add(WaterPressure);
                         }
                     }
-                    sw_reverse.Reset();
-                }
-                if (_StepTesting >= ClsUnitManagercs.cls_Units[iIndex].iWash_Cycle)
-                {
-                    _testSeq = TestSeq.TURN_DRYING;
-                }
-                else
-                {
-                    _testSeq = TestSeq.TURN_FLUSHING_WASHING;
-                }
-                break;
-            case TestSeq.TURN_DRYING:
-                bool bdry = await Setting_Drying(5);
-                if (bdry)
-                {
-                    log.Info((object)$"Drying relay set successfully for SN {_SN}.");
-                    _testSeq = TestSeq.DRYING;
-                }
-                else
-                {
-                    log.Error((object)$"Failed to Drying relay set for SN {_SN}.");
-                    //MessageBox.Show($"Failed to Drying relay set for SN {_SN}.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-                    
-                    _testSeq = TestSeq.ERROR;
-                    ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.Error;
-                }
-                break;
-            case TestSeq.DRYING:
-                sw_drying = new Stopwatch();
-                sw_drying.Start();
-                _bGetFlowRate = false;
-                _bGetWaterPressure = false;
-                _bGetAirPressure = true;
-                while (sw_drying.ElapsedMilliseconds < ClsUnitManagercs.cls_Units[iIndex].iDI_Drying_Time * 1000)
-                {
-                    if (ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process == Cls_SequenceCommon.SequenceState.Error)
+                    sw_flush.Reset();
+                    _testSeq = TestSeq.TURN_REVERSE_WASHING;
+                    break;
+                case TestSeq.TURN_REVERSE_WASHING:
+                    if (ClsUnitManagercs.cls_Units[iIndex].bReverse_Washing_Flow)
                     {
-                        log.Error((object)$"Process error during testing for SN {_SN}.");
-                        
-                        _testSeq = TestSeq.ERROR;
-                        return;
+                        bool bReverse = await Setting_FlushingReverse(5);
+                        if (bReverse)
+                        {
+                            log.Info((object)$"Reverse relay set successfully for SN {_SN}.");
+                            _testSeq = TestSeq.REVERSE_WASHING;
+                        }
+                        else
+                        {
+                            log.Error((object)$"Failed to Reverse relay set for SN {_SN}.");
+                            //MessageBox.Show($"Failed to Reverse relay set for SN {_SN}.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+
+                            _testSeq = TestSeq.ERROR;
+                            ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.Error;
+                        }
                     }
-                    if (_bTestAbort)
+                    else
+                        _testSeq = TestSeq.REVERSE_WASHING;
+                    break;
+                case TestSeq.REVERSE_WASHING:
+                    _StepTesting++;
+                    if (ClsUnitManagercs.cls_Units[iIndex].bReverse_Washing_Flow)
                     {
-                        log.Error((object)$"Process abort during testing for SN {_SN}.");
-                        _testSeq = TestSeq.ABORT;
-                        return;
+                        sw_reverse = new Stopwatch();
+                        sw_reverse.Start();
+                        while (sw_reverse.ElapsedMilliseconds < ClsUnitManagercs.cls_Units[iIndex].iDI_Reverse_Washing_Time * 1000)
+                        {
+                            if (ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process == Cls_SequenceCommon.SequenceState.Error)
+                            {
+                                log.Error((object)$"Process error during testing for SN {_SN}.");
+
+                                _testSeq = TestSeq.ERROR;
+                                return;
+                            }
+                            if (_bTestAbort)
+                            {
+                                log.Error((object)$"Process abort during testing for SN {_SN}.");
+                                _testSeq = TestSeq.ABORT;
+                                return;
+                            }
+                            Thread.Sleep(1000);
+                            if (sw_reverse.Elapsed.TotalSeconds > ClsDefine.DefineTesting.Time2stable)
+                            {
+                                ListFlowRates.Add(FlowRate);
+                                ListWaterPressures.Add(WaterPressure);
+                            }
+                        }
+                        sw_reverse.Reset();
                     }
-                    Thread.Sleep(1000);
-                    if (sw_drying.Elapsed.TotalSeconds > ClsDefine.DefineTesting.Time2stable)
+                    if (_StepTesting >= ClsUnitManagercs.cls_Units[iIndex].iWash_Cycle)
                     {
-                        ListAirPressures.Add(AirPressure);
-                        ListAirFlow.Add(AirFlow);
-                    }
-                }
-                sw_drying.Reset();
-                _testSeq = TestSeq.TURN_REVERSE_DRYING;
-                break;
-            case TestSeq.TURN_REVERSE_DRYING:
-                if (ClsUnitManagercs.cls_Units[iIndex].bReverse_DI_Flushing_Flow)
-                {
-                    bool breversedry = await Setting_ReverseDrying(5);
-                    if (breversedry)
-                    {
-                        log.Info((object)$"Reverse Drying relay set successfully for SN {_SN}.");
-                        _testSeq = TestSeq.REVERSE_DRYING;
+                        _testSeq = TestSeq.TURN_DRYING;
                     }
                     else
                     {
-                        log.Error((object)$"Failed to Reverse Drying relay set for SN {_SN}.");
-                        //MessageBox.Show($"Failed to Reverse Drying relay set for SN {_SN}.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-                        
+                        _testSeq = TestSeq.TURN_FLUSHING_WASHING;
+                    }
+                    break;
+                case TestSeq.TURN_DRYING:
+                    bool bdry = await Setting_Drying(5);
+                    if (bdry)
+                    {
+                        log.Info((object)$"Drying relay set successfully for SN {_SN}.");
+                        _testSeq = TestSeq.DRYING;
+                    }
+                    else
+                    {
+                        log.Error((object)$"Failed to Drying relay set for SN {_SN}.");
+                        //MessageBox.Show($"Failed to Drying relay set for SN {_SN}.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+
                         _testSeq = TestSeq.ERROR;
                         ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.Error;
                     }
-                }
-                else
-                    _testSeq = TestSeq.REVERSE_DRYING;
-                break;
-            case TestSeq.REVERSE_DRYING:
-                if (ClsUnitManagercs.cls_Units[iIndex].bReverse_DI_Flushing_Flow)
-                {
-                    sw_reverse_drying = new Stopwatch();
-                    sw_reverse_drying.Start();
-                    while (sw_reverse_drying.ElapsedMilliseconds < ClsUnitManagercs.cls_Units[iIndex].iReverse_DI_Drying_Time * 1000)
+                    break;
+                case TestSeq.DRYING:
+                    sw_drying = new Stopwatch();
+                    sw_drying.Start();
+                    _bGetFlowRate = false;
+                    _bGetWaterPressure = false;
+                    _bGetAirPressure = true;
+                    while (sw_drying.ElapsedMilliseconds < ClsUnitManagercs.cls_Units[iIndex].iDI_Drying_Time * 1000)
                     {
                         if (ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process == Cls_SequenceCommon.SequenceState.Error)
                         {
                             log.Error((object)$"Process error during testing for SN {_SN}.");
-                            
+
                             _testSeq = TestSeq.ERROR;
                             return;
                         }
@@ -1359,183 +1251,244 @@ public class Cls_SequenceTest
                             return;
                         }
                         Thread.Sleep(1000);
-                        if (sw_reverse_drying.Elapsed.TotalSeconds > ClsDefine.DefineTesting.Time2stable)
+                        if (sw_drying.Elapsed.TotalSeconds > ClsDefine.DefineTesting.Time2stable)
                         {
                             ListAirPressures.Add(AirPressure);
                             ListAirFlow.Add(AirFlow);
                         }
                     }
-                    sw_reverse_drying.Reset();
-                }
-                _testSeq = TestSeq.CHECKING_RESULT;
-                break;
-            case TestSeq.CHECKING_RESULT:
-                _bGetFlowRate = false;
-                _bGetWaterPressure = false;
-                _bGetAirPressure = false;
-                //Check all values of ListAirPressures, ListWaterPressures, ListFlowRates   
-                if (ListAirPressures.Count == 0 || ListWaterPressures.Count == 0 || ListFlowRates.Count == 0)
-                {
-                    log.Error((object)$"No data collected during testing for SN {_SN}.");
-                    //MessageBox.Show("No data collected during testing. Please check the setup.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-                    
-                    _testSeq = TestSeq.ERROR;
-                    ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.Error;
-                    return;
-                }
-                double flowrateMax = ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Rate + ((ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Rate * ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Tol) / 100);
-                double flowrateMin = ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Rate - ((ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Rate * ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Tol) / 100);
-                int times2ignoreFlowRate = (ClsUnitManagercs.cls_Units[iIndex].iWashing_Time / 100) * 15;
-                if (times2ignoreFlowRate < 15) times2ignoreFlowRate = 15;
-                int NGAllow = ClsUnitManagercs.cls_Units[iIndex].bReverse_DI_Flushing_Flow ? ClsUnitManagercs.cls_Units[iIndex].iWash_Cycle * 2 : ClsUnitManagercs.cls_Units[iIndex].iWash_Cycle;
-                var checkFlowrate = CheckOutSpec(ListFlowRates, flowrateMin, flowrateMax, 5 * NGAllow);
-                if (!checkFlowrate.IsPass)
-                {
-                    TestResult = "FAIL";
-                    _testSeq = TestSeq.TEST_FAIL;
-                    if (checkFlowrate.MinUnder != null)
+                    sw_drying.Reset();
+                    _testSeq = TestSeq.TURN_REVERSE_DRYING;
+                    break;
+                case TestSeq.TURN_REVERSE_DRYING:
+                    if (ClsUnitManagercs.cls_Units[iIndex].bReverse_DI_Flushing_Flow)
                     {
-                        TestResult = "LP-030-EQ-003";
-                        FlowRate = checkFlowrate.MinUnder ?? 0.0;
-                    }
-                    else
-                    {
-                        TestResult = "LP-030-EQ-004";
-                        FlowRate = checkFlowrate.MaxOver ?? 0.0;
-                    }
-                }
-                else
-                {
-                    FlowRate = checkFlowrate.AverageInSpec ?? 0.0;
-                }
-                double AirpressureMax = ClsUnitManagercs.cls_Units[iIndex].dDI_Max_AirPressure;
-                double AirpressureMin = ClsUnitManagercs.cls_Units[iIndex].dDI_Min_AirPressure;
-                int times2ignoreAir = (ClsUnitManagercs.cls_Units[iIndex].iDI_Drying_Time / 100) * 15;
-                if (times2ignoreAir < 15) times2ignoreAir = 15;
-                var checkAirpressure = CheckOutSpec(ListAirPressures, AirpressureMin, AirpressureMax, 5);
-                if (!checkAirpressure.IsPass)
-                {
-                    TestResult = "FAIL";
-                    _testSeq = TestSeq.TEST_FAIL;
-                    if (checkAirpressure.MinUnder != null)
-                    {
-                        TestResult = "LP-030-EQ-001";
-                        AirPressure = checkAirpressure.MinUnder ?? 0.0;
-                    }
-                    else
-                    {
-                        TestResult = "LP-030-EQ-002";
-                        AirPressure = checkAirpressure.MaxOver ?? 0.0;
-                    }
-                }
-                else
-                {
-                    AirPressure = checkAirpressure.AverageInSpec ?? 0.0;
-                }
-                double WaterpressureMax = ClsUnitManagercs.cls_Units[iIndex].dDI_Max_WaterPressure;
-                double WaterpressureMin = ClsUnitManagercs.cls_Units[iIndex].dDI_Min_WaterPressure;
-                var checkWaterpressure = CheckOutSpec(ListWaterPressures, WaterpressureMin, WaterpressureMax, 5);
+                        bool breversedry = await Setting_ReverseDrying(5);
+                        if (breversedry)
+                        {
+                            log.Info((object)$"Reverse Drying relay set successfully for SN {_SN}.");
+                            _testSeq = TestSeq.REVERSE_DRYING;
+                        }
+                        else
+                        {
+                            log.Error((object)$"Failed to Reverse Drying relay set for SN {_SN}.");
+                            //MessageBox.Show($"Failed to Reverse Drying relay set for SN {_SN}.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
 
-                if (!checkWaterpressure.IsPass)
-                {
-                    TestResult = "FAIL";
-                    _testSeq = TestSeq.TEST_FAIL;
-                    if (checkWaterpressure.MinUnder != null)
+                            _testSeq = TestSeq.ERROR;
+                            ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.Error;
+                        }
+                    }
+                    else
+                        _testSeq = TestSeq.REVERSE_DRYING;
+                    break;
+                case TestSeq.REVERSE_DRYING:
+                    if (ClsUnitManagercs.cls_Units[iIndex].bReverse_DI_Flushing_Flow)
                     {
-                        TestResult = "LP-030-EQ-006";
-                        WaterPressure = checkWaterpressure.MinUnder ?? 0.0;
+                        sw_reverse_drying = new Stopwatch();
+                        sw_reverse_drying.Start();
+                        while (sw_reverse_drying.ElapsedMilliseconds < ClsUnitManagercs.cls_Units[iIndex].iReverse_DI_Drying_Time * 1000)
+                        {
+                            if (ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process == Cls_SequenceCommon.SequenceState.Error)
+                            {
+                                log.Error((object)$"Process error during testing for SN {_SN}.");
+
+                                _testSeq = TestSeq.ERROR;
+                                return;
+                            }
+                            if (_bTestAbort)
+                            {
+                                log.Error((object)$"Process abort during testing for SN {_SN}.");
+                                _testSeq = TestSeq.ABORT;
+                                return;
+                            }
+                            Thread.Sleep(1000);
+                            if (sw_reverse_drying.Elapsed.TotalSeconds > ClsDefine.DefineTesting.Time2stable)
+                            {
+                                ListAirPressures.Add(AirPressure);
+                                ListAirFlow.Add(AirFlow);
+                            }
+                        }
+                        sw_reverse_drying.Reset();
+                    }
+                    _testSeq = TestSeq.CHECKING_RESULT;
+                    break;
+                case TestSeq.CHECKING_RESULT:
+                    _bGetFlowRate = false;
+                    _bGetWaterPressure = false;
+                    _bGetAirPressure = false;
+                    //Check all values of ListAirPressures, ListWaterPressures, ListFlowRates   
+                    if (ListAirPressures.Count == 0 || ListWaterPressures.Count == 0 || ListFlowRates.Count == 0)
+                    {
+                        log.Error((object)$"No data collected during testing for SN {_SN}.");
+                        //MessageBox.Show("No data collected during testing. Please check the setup.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+
+                        _testSeq = TestSeq.ERROR;
+                        ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.Error;
+                        return;
+                    }
+                    double flowrateMax = ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Rate + ((ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Rate * ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Tol) / 100);
+                    double flowrateMin = ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Rate - ((ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Rate * ClsUnitManagercs.cls_Units[iIndex].dDi_Flow_Tol) / 100);
+                    int times2ignoreFlowRate = (ClsUnitManagercs.cls_Units[iIndex].iWashing_Time / 100) * 15;
+                    if (times2ignoreFlowRate < 15) times2ignoreFlowRate = 15;
+                    int NGAllow = ClsUnitManagercs.cls_Units[iIndex].bReverse_DI_Flushing_Flow ? ClsUnitManagercs.cls_Units[iIndex].iWash_Cycle * 2 : ClsUnitManagercs.cls_Units[iIndex].iWash_Cycle;
+                    var checkFlowrate = CheckOutSpec(ListFlowRates, flowrateMin, flowrateMax, 5 * NGAllow);
+                    if (!checkFlowrate.IsPass)
+                    {
+                        TestResult = "FAIL";
+                        _testSeq = TestSeq.TEST_FAIL;
+                        if (checkFlowrate.MinUnder != null)
+                        {
+                            TestResult = "LP-030-EQ-003";
+                            FlowRate = checkFlowrate.MinUnder ?? 0.0;
+                        }
+                        else
+                        {
+                            TestResult = "LP-030-EQ-004";
+                            FlowRate = checkFlowrate.MaxOver ?? 0.0;
+                        }
                     }
                     else
                     {
-                        TestResult = "LP-030-EQ-005";
-                        WaterPressure = checkWaterpressure.MaxOver ?? 0.0;
+                        FlowRate = checkFlowrate.AverageInSpec ?? 0.0;
                     }
-                }
-                else
-                {
-                    WaterPressure = checkWaterpressure.AverageInSpec ?? 0.0;
-                }
-                if (ClsUnitManagercs.cls_Units[iIndex].bCheck_DI_Huminity)
-                {
-                    //Check huminity
-                }
-                if (_testSeq != TestSeq.TEST_FAIL)
-                {
-                    _testSeq = TestSeq.TEST_PASS;
-                }
-                else
-                {
-                    _testSeq = TestSeq.TEST_FAIL;
-                }
-                break;
-            case TestSeq.TEST_PASS:
-                TestResult = "PASS";
-                ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.CompletedPass;
-                _testSeq = TestSeq.CREATE_LOCAL_LOG;
-                break;
-            case TestSeq.TEST_FAIL:
-                ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.CompletedFail;
-                _testSeq = TestSeq.CREATE_LOCAL_LOG;
-                break;
-            case TestSeq.CREATE_LOCAL_LOG:
-                try
-                {
-                    DateTime dt = DateTime.Now;
-                    var logger = new Logger($"C:\\Aavid_Test\\Datalog\\DI_Water_Wash\\{dt.ToString("yyyyMMdd")}.csv");
-                    var logData = new FlushingLog
+                    double AirpressureMax = ClsUnitManagercs.cls_Units[iIndex].dDI_Max_AirPressure;
+                    double AirpressureMin = ClsUnitManagercs.cls_Units[iIndex].dDI_Min_AirPressure;
+                    int times2ignoreAir = (ClsUnitManagercs.cls_Units[iIndex].iDI_Drying_Time / 100) * 15;
+                    if (times2ignoreAir < 15) times2ignoreAir = 15;
+                    var checkAirpressure = CheckOutSpec(ListAirPressures, AirpressureMin, AirpressureMax, 5);
+                    if (!checkAirpressure.IsPass)
                     {
-                        Time = dt,
-                        SerialNumber = _SN,
-                        TestResult = TestResult,
-                        FlowRate = ListFlowRates,
-                        WaterPressure = ListWaterPressures,
-                        AirPressure = ListAirPressures,
-                    };
-                    logger.FlushingTest(logData);
-                }
-                catch (Exception ex)
-                {
-                    log.Error("Exception when save local log: " + ex.ToString());
-                }
-                _testSeq = TestSeq.SAVE_DB;
-                break;
-            case TestSeq.SAVE_DB:
-                string PN = ClsUnitManagercs.cls_Units[iIndex].AssyPN;
-                string WO = ClsUnitManagercs.cls_Units[iIndex].WO;
-                string Station = ClsUnitManagercs.cls_Units[iIndex].StationID;
-                if (TestType == "Engineering Test") TestResult = "LP-030-EQ-007";
-                if (!SavetoDBMonths_Log(_SN, PN, Station, TestResult, "DI_Water_Wash", "0"))
-                {
-                    //MessageBox.Show("Failed to save DB months log failed.");
-                    log.Error("Failed to save DB months log failed.");
-                    
-                    _testSeq = TestSeq.ERROR;
+                        TestResult = "FAIL";
+                        _testSeq = TestSeq.TEST_FAIL;
+                        if (checkAirpressure.MinUnder != null)
+                        {
+                            TestResult = "LP-030-EQ-001";
+                            AirPressure = checkAirpressure.MinUnder ?? 0.0;
+                        }
+                        else
+                        {
+                            TestResult = "LP-030-EQ-002";
+                            AirPressure = checkAirpressure.MaxOver ?? 0.0;
+                        }
+                    }
+                    else
+                    {
+                        AirPressure = checkAirpressure.AverageInSpec ?? 0.0;
+                    }
+                    double WaterpressureMax = ClsUnitManagercs.cls_Units[iIndex].dDI_Max_WaterPressure;
+                    double WaterpressureMin = ClsUnitManagercs.cls_Units[iIndex].dDI_Min_WaterPressure;
+                    var checkWaterpressure = CheckOutSpec(ListWaterPressures, WaterpressureMin, WaterpressureMax, 5);
+
+                    if (!checkWaterpressure.IsPass)
+                    {
+                        TestResult = "FAIL";
+                        _testSeq = TestSeq.TEST_FAIL;
+                        if (checkWaterpressure.MinUnder != null)
+                        {
+                            TestResult = "LP-030-EQ-006";
+                            WaterPressure = checkWaterpressure.MinUnder ?? 0.0;
+                        }
+                        else
+                        {
+                            TestResult = "LP-030-EQ-005";
+                            WaterPressure = checkWaterpressure.MaxOver ?? 0.0;
+                        }
+                    }
+                    else
+                    {
+                        WaterPressure = checkWaterpressure.AverageInSpec ?? 0.0;
+                    }
+                    if (ClsUnitManagercs.cls_Units[iIndex].bCheck_DI_Huminity)
+                    {
+                        //Check huminity
+                    }
+                    if (_testSeq != TestSeq.TEST_FAIL)
+                    {
+                        _testSeq = TestSeq.TEST_PASS;
+                    }
+                    else
+                    {
+                        _testSeq = TestSeq.TEST_FAIL;
+                    }
                     break;
-                }
-                if (!SaveToDBDIWaterWashLog(_SN, PN, WO, Station, TestResult, 0, (float)FlowRate, (float)WaterPressure, (float)AirPressure))
-                {
-                    //MessageBox.Show("Failed to save DB DI_Water log failed.");
-                    log.Error("Failed to save DB DI_Water log failed.");
-                    
-                    _testSeq = TestSeq.ERROR;
+                case TestSeq.TEST_PASS:
+                    TestResult = "PASS";
+                    ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.CompletedPass;
+                    _testSeq = TestSeq.CREATE_LOCAL_LOG;
                     break;
-                }
-                _testSeq = TestSeq.END;
-                break;
-            case TestSeq.END:
-                _bGetAirPressure = false;
-                _bGetFlowRate = false;
-                _bGetWaterPressure = false;
-                ListAirPressures = new List<double>();
-                ListWaterPressures = new List<double>();
-                ListFlowRates = new List<double>();
-                _testSeq = TestSeq.WAIT;
-                if (TestType == "Engineering Test")
-                    TestType = "Production Test";
-                OnRequestUpdateResult?.Invoke();
-                break;
+                case TestSeq.TEST_FAIL:
+                    ClsUnitManagercs.cls_Units[iIndex].clsSequenceCommon.process = Cls_SequenceCommon.SequenceState.CompletedFail;
+                    _testSeq = TestSeq.CREATE_LOCAL_LOG;
+                    break;
+                case TestSeq.CREATE_LOCAL_LOG:
+                    try
+                    {
+                        DateTime dt = DateTime.Now;
+                        var logger = new Logger($"C:\\Aavid_Test\\Datalog\\DI_Water_Wash\\{dt.ToString("yyyyMMdd")}.csv");
+                        var logData = new FlushingLog
+                        {
+                            Time = dt,
+                            SerialNumber = _SN,
+                            TestResult = TestResult,
+                            FlowRate = ListFlowRates,
+                            WaterPressure = ListWaterPressures,
+                            AirPressure = ListAirPressures,
+                        };
+                        logger.FlushingTest(logData);
+                    }
+                    catch (Exception ex)
+                    {
+                        log.Error("Exception when save local log: " + ex.ToString());
+                    }
+                    _testSeq = TestSeq.SAVE_DB;
+                    break;
+                case TestSeq.SAVE_DB:
+                    string PN = ClsUnitManagercs.cls_Units[iIndex].AssyPN;
+                    string WO = ClsUnitManagercs.cls_Units[iIndex].WO;
+                    string Station = ClsUnitManagercs.cls_Units[iIndex].StationID;
+                    if (TestType == "Engineering Test") TestResult = "LP-030-EQ-007";
+                    //if (!SavetoDBMonths_Log(_SN, PN, Station, TestResult, StateCommon.Secsion.ToString(), "0", _TestType, WO))
+                    //{
+                    //    //MessageBox.Show("Failed to save DB months log failed.");
+                    //    log.Error("Failed to save DB months log failed.");
+
+                    //    _testSeq = TestSeq.ERROR;
+                    //    break;
+                    //}
+                    if (!SaveToDBDIWaterWashLog(_SN, PN, WO, Station, TestResult, 0, (float)FlowRate, (float)WaterPressure, (float)AirPressure))
+                    {
+                        //MessageBox.Show("Failed to save DB DI_Water log failed.");
+                        log.Error("Failed to save DB DI_Water log failed.");
+
+                        _testSeq = TestSeq.ERROR;
+                        break;
+                    }
+                    _testSeq = TestSeq.END;
+                    break;
+                case TestSeq.END:
+                    _bGetAirPressure = false;
+                    _bGetFlowRate = false;
+                    _bGetWaterPressure = false;
+                    ListAirPressures = new List<double>();
+                    ListWaterPressures = new List<double>();
+                    ListFlowRates = new List<double>();
+                    _testSeq = TestSeq.WAIT;
+                    if (TestType == "Engineering Test")
+                        TestType = "Production Test";
+                    OnRequestUpdateTestMode?.Invoke();
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            log.Error((object)($"Exception in TestSequence-{_testSeq.ToString()}: " + ex.ToString()));
+        }
+        finally
+        {
+            _loopLock.Release();
         }
     }
+
     public void AddProcessLogTest(DataTable dtResult)
     {
         OnRequestAddProcessLogTest?.Invoke(this.iIndex, dtResult);

@@ -40,10 +40,9 @@ public static class ClsDefine
     }
     public class DefineFixture
     {
-
         public static bool bDualFixture = bool.Parse(ClsIO.ReadValue("Fixture", "DualFixture", "False", "C:\\Aavid_Test\\Setup-ini\\FixtureConfiguration.ini"));
-        public static bool bAutoScanner = bool.Parse(ClsIO.ReadValue("Fixture", "AutoScanner", "True", "C:\\Aavid_Test\\Setup-ini\\FixtureConfiguration.ini"));
-        public static bool bAutoFixture = bool.Parse(ClsIO.ReadValue("Fixture", "AutoFixture", "True", "C:\\Aavid_Test\\Setup-ini\\FixtureConfiguration.ini"));
+        public static bool bAutoScanner = bool.Parse(ClsIO.ReadValue("Fixture", "AutoScanner", "False", "C:\\Aavid_Test\\Setup-ini\\FixtureConfiguration.ini"));
+        public static bool bAutoFixture = bool.Parse(ClsIO.ReadValue("Fixture", "AutoFixture", "False", "C:\\Aavid_Test\\Setup-ini\\FixtureConfiguration.ini"));
         public static bool bN2PressureCheck = bool.Parse(ClsIO.ReadValue("Fixture", "N2PressureCheck", "False", "C:\\Aavid_Test\\Setup-ini\\FixtureConfiguration.ini"));
         public static double dN2FillTimeOut = int.Parse(ClsIO.ReadValue("Fixture", "N2FillTimeOut", "20", "C:\\Aavid_Test\\Setup-ini\\FixtureConfiguration.ini"));
         public static double dN2StabilityTime = int.Parse(ClsIO.ReadValue("Fixture", "N2StabilityTime", "15", "C:\\Aavid_Test\\Setup-ini\\FixtureConfiguration.ini"));
